@@ -1,1 +1,55 @@
 :root{font-family:Inter,"Noto Sans Myanmar",system-ui,sans-serif;color:#fff;background:#050507}*{box-sizing:border-box}body{margin:0;overflow:hidden;background:radial-gradient(circle at top,#2e1065,transparent 35%),#050507}.tv-shell{height:100vh;display:grid;grid-template-rows:auto 1fr auto;padding:2.2vh 2.2vw;gap:1.5vh}header,footer{display:flex;align-items:center;justify-content:space-between;gap:3vw}header p{margin:0;color:#c4b5fd;font-size:1.2vw;letter-spacing:.18em;text-transform:uppercase}header h1{margin:.3vh 0 0;font-size:2.5vw}header>span{padding:.7vw 1.1vw;border:1px solid #3f3f46;border-radius:999px;background:#18181b;color:#d4d4d8;font-size:1vw}.screen{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:2vw;background:#000;box-shadow:0 2vw 5vw rgba(0,0,0,.45)}.player{position:absolute;inset:0}.player iframe{width:100%;height:100%}.standby{position:absolute;inset:0;display:grid;place-content:center;text-align:center;background:radial-gradient(circle,#3b0764,#09090b)}.standby div{font-size:8vw}.standby h2{margin:1vh 0;font-size:3vw}.standby p{margin:0;color:#c4b5fd;font-size:1.4vw}footer{min-height:8vh;padding:.4vh .6vw}footer div{min-width:0}footer small,footer strong,footer span{display:block}footer small{color:#a78bfa;font-size:.8vw;letter-spacing:.18em}footer strong{max-width:65vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:1.3vw;margin:.4vh 0}footer span{color:#a1a1aa;font-size:.9vw}.next{width:28vw;padding-left:2vw;border-left:1px solid #3f3f46}.next strong{font-size:1vw}@media(max-aspect-ratio:4/3){header h1{font-size:3vw}.screen{border-radius:2.5vw}}
+.tv-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+}
+
+.tv-title{
+  flex:1;
+  overflow:hidden;
+}
+
+.tv-marquee{
+  overflow:hidden;
+  white-space:nowrap;
+  margin-bottom:6px;
+}
+
+.tv-marquee span{
+  display:inline-block;
+  padding-left:100%;
+  animation:tvMarquee 12s linear infinite;
+
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:3px;
+  color:#d8c5ff;
+  text-transform:uppercase;
+}
+
+@keyframes tvMarquee{
+  from{
+    transform:translateX(0);
+  }
+  to{
+    transform:translateX(-100%);
+  }
+}
+
+.tv-title h1{
+  margin:0;
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:2px;
+  color:#fff;
+}
+
+.tv-status{
+  padding:8px 14px;
+  border-radius:999px;
+  background:#222;
+  color:#ddd;
+  font-size:14px;
+}
