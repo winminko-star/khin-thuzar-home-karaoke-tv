@@ -177,10 +177,10 @@ body {
   color: #ffffff;
 
   font-size: clamp(
-    24px,
-    4vw,
-    58px
-  );
+  18px,
+  2vw,
+  32px
+);
 
   font-weight: 900;
   line-height: 1.05;
@@ -784,4 +784,19 @@ footer span {
     padding: 12px 22px;
     font-size: 15px;
   }
+}
+.standby-logo {
+  width: min(320px, 55vw);
+  max-height: 52vh;
+  object-fit: contain;
+  margin: 0 auto 18px;
+  display: block;
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.45));
+}
+.tv-marquee{
+    margin-bottom:2px;
+}
+
+.tv-header{
+    padding-bottom:6px;
 }
