@@ -314,7 +314,7 @@ export default function App() {
         <div className="tv-title">
           <div className="tv-marquee">
             <span>
-              💚 Khin Thuzar Hlaing 💚  </span>
+              💚 Khin Thuzar Hlaing 💚 💜 Khin Thuzar Hlaing 💜 ❤️ Khin Thuzar Hlaing ❤️  </span>
           </div>
 
           <h1>HOME KARAOKE 🎤</h1>
