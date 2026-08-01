@@ -8,6 +8,16 @@
   color: #ffffff;
   background: #050507;
   font-synthesis: none;
+
+  /*
+    YouTube video ချဲ့နှုန်း
+
+    1.00 = မချဲ့
+    1.15 = အနည်းငယ်ချဲ့
+    1.32 = ပုံမှန်အကြံပြု
+    1.45 = ပိုကြီး
+  */
+  --video-zoom: 1.32;
 }
 
 /* ========================================
@@ -87,7 +97,7 @@ body {
 }
 
 /* ========================================
-   MOVING KHIN THUZAR HLAING'S TEXT
+   MOVING NAME
 ======================================== */
 
 .tv-marquee {
@@ -110,7 +120,6 @@ body {
   left: 100%;
 
   display: inline-block;
-
   min-width: max-content;
 
   color: #d8c5ff;
@@ -129,11 +138,7 @@ body {
 
   transform: translateY(-50%);
 
-  animation:
-    tvMarquee
-    15s
-    linear
-    infinite;
+  animation: tvMarquee 15s linear infinite;
 
   will-change: left, transform;
 }
@@ -141,6 +146,7 @@ body {
 @keyframes tvMarquee {
   0% {
     left: 100%;
+
     transform:
       translateX(0)
       translateY(-50%);
@@ -148,6 +154,7 @@ body {
 
   100% {
     left: 0;
+
     transform:
       translateX(-100%)
       translateY(-50%);
@@ -222,6 +229,7 @@ body {
 .screen {
   position: relative;
 
+  width: 100%;
   min-width: 0;
   min-height: 0;
 
@@ -253,15 +261,39 @@ body {
 
   width: 100%;
   height: 100%;
+
+  overflow: hidden;
+
+  background: #000000;
 }
 
+/*
+  YouTube iframe ကို center မှာထားပြီး
+  scale ချဲ့ထားတာဖြစ်တယ်။
+*/
 .player iframe {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
   display: block;
 
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
+
+  min-width: 100%;
+  min-height: 100%;
 
   border: 0;
+
+  transform:
+    translate(-50%, -50%)
+    scale(var(--video-zoom));
+
+  transform-origin: center center;
+
+  background: #000000;
 }
 
 /* ========================================
@@ -271,6 +303,8 @@ body {
 .standby {
   position: absolute;
   inset: 0;
+
+  z-index: 2;
 
   display: grid;
   place-content: center;
@@ -335,6 +369,7 @@ body {
 footer {
   width: 100%;
   min-width: 0;
+
   min-height: clamp(
     60px,
     8vh,
@@ -450,10 +485,12 @@ footer span {
 ======================================== */
 
 @media (max-aspect-ratio: 4 / 3) {
+  :root {
+    --video-zoom: 1.2;
+  }
+
   .tv-shell {
-    padding:
-      14px
-      14px;
+    padding: 14px;
   }
 
   .tv-title h1 {
@@ -478,10 +515,86 @@ footer span {
 }
 
 /* ========================================
-   PHONE SCREEN
+   PHONE LANDSCAPE
 ======================================== */
 
-@media (max-width: 700px) {
+@media (
+  max-height: 600px
+) and (
+  orientation: landscape
+) {
+  :root {
+    --video-zoom: 1.32;
+  }
+
+  .tv-shell {
+    gap: 6px;
+
+    padding:
+      6px
+      10px;
+  }
+
+  .tv-marquee {
+    height: 18px;
+    margin-bottom: 1px;
+  }
+
+  .tv-marquee span {
+    font-size: 13px;
+    letter-spacing: 1.4px;
+    animation-duration: 12s;
+  }
+
+  .tv-title h1 {
+    font-size: clamp(
+      20px,
+      4.2vw,
+      34px
+    );
+  }
+
+  .tv-status {
+    padding: 5px 8px;
+    font-size: 8px;
+  }
+
+  footer {
+    min-height: 52px;
+    padding: 2px 4px;
+  }
+
+  footer small {
+    font-size: 7px;
+  }
+
+  footer strong {
+    margin: 2px 0;
+    font-size: 12px;
+  }
+
+  footer span {
+    font-size: 9px;
+  }
+
+  .next strong {
+    font-size: 9px;
+  }
+}
+
+/* ========================================
+   PHONE PORTRAIT
+======================================== */
+
+@media (
+  max-width: 700px
+) and (
+  orientation: portrait
+) {
+  :root {
+    --video-zoom: 1.12;
+  }
+
   .tv-shell {
     gap: 10px;
     padding: 10px;
@@ -514,9 +627,7 @@ footer span {
   .tv-status {
     max-width: 92px;
 
-    padding:
-      6px
-      8px;
+    padding: 6px 8px;
 
     font-size: 9px;
   }
@@ -607,7 +718,9 @@ footer span {
 @media (prefers-reduced-motion: reduce) {
   .tv-marquee span {
     position: static;
+
     transform: none;
+
     animation: none;
   }
     }
