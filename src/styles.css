@@ -1,55 +1,613 @@
-:root{font-family:Inter,"Noto Sans Myanmar",system-ui,sans-serif;color:#fff;background:#050507}*{box-sizing:border-box}body{margin:0;overflow:hidden;background:radial-gradient(circle at top,#2e1065,transparent 35%),#050507}.tv-shell{height:100vh;display:grid;grid-template-rows:auto 1fr auto;padding:2.2vh 2.2vw;gap:1.5vh}header,footer{display:flex;align-items:center;justify-content:space-between;gap:3vw}header p{margin:0;color:#c4b5fd;font-size:1.2vw;letter-spacing:.18em;text-transform:uppercase}header h1{margin:.3vh 0 0;font-size:2.5vw}header>span{padding:.7vw 1.1vw;border:1px solid #3f3f46;border-radius:999px;background:#18181b;color:#d4d4d8;font-size:1vw}.screen{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:2vw;background:#000;box-shadow:0 2vw 5vw rgba(0,0,0,.45)}.player{position:absolute;inset:0}.player iframe{width:100%;height:100%}.standby{position:absolute;inset:0;display:grid;place-content:center;text-align:center;background:radial-gradient(circle,#3b0764,#09090b)}.standby div{font-size:8vw}.standby h2{margin:1vh 0;font-size:3vw}.standby p{margin:0;color:#c4b5fd;font-size:1.4vw}footer{min-height:8vh;padding:.4vh .6vw}footer div{min-width:0}footer small,footer strong,footer span{display:block}footer small{color:#a78bfa;font-size:.8vw;letter-spacing:.18em}footer strong{max-width:65vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:1.3vw;margin:.4vh 0}footer span{color:#a1a1aa;font-size:.9vw}.next{width:28vw;padding-left:2vw;border-left:1px solid #3f3f46}.next strong{font-size:1vw}@media(max-aspect-ratio:4/3){header h1{font-size:3vw}.screen{border-radius:2.5vw}}
-.tv-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:16px;
+:root {
+  font-family:
+    Inter,
+    "Noto Sans Myanmar",
+    system-ui,
+    sans-serif;
+
+  color: #ffffff;
+  background: #050507;
+  font-synthesis: none;
 }
 
-.tv-title{
-  flex:1;
-  overflow:hidden;
+/* ========================================
+   RESET
+======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.tv-marquee{
-  overflow:hidden;
-  white-space:nowrap;
-  margin-bottom:6px;
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
 }
 
-.tv-marquee span{
-  display:inline-block;
-  padding-left:100%;
-  animation:tvMarquee 12s linear infinite;
-
-  font-size:22px;
-  font-weight:800;
-  letter-spacing:3px;
-  color:#d8c5ff;
-  text-transform:uppercase;
+body {
+  background:
+    radial-gradient(
+      circle at top,
+      #2e1065 0%,
+      transparent 35%
+    ),
+    #050507;
 }
 
-@keyframes tvMarquee{
-  from{
-    transform:translateX(0);
+/* ========================================
+   MAIN TV LAYOUT
+======================================== */
+
+.tv-shell {
+  width: 100%;
+  height: 100dvh;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  gap: clamp(8px, 1.5vh, 18px);
+
+  padding:
+    clamp(10px, 2.2vh, 26px)
+    clamp(12px, 2.2vw, 34px);
+
+  overflow: hidden;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+
+.tv-header {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: clamp(10px, 2vw, 28px);
+
+  overflow: hidden;
+}
+
+.tv-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ========================================
+   MOVING KHIN THUZAR HLAING'S TEXT
+======================================== */
+
+.tv-marquee {
+  position: relative;
+
+  width: 100%;
+  max-width: 100%;
+
+  height: clamp(24px, 3.2vw, 44px);
+
+  margin-bottom: clamp(3px, 0.6vh, 8px);
+
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tv-marquee span {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+
+  display: inline-block;
+
+  min-width: max-content;
+
+  color: #d8c5ff;
+
+  font-size: clamp(15px, 1.9vw, 28px);
+  font-weight: 800;
+  line-height: 1;
+
+  letter-spacing: clamp(
+    1.5px,
+    0.25vw,
+    4px
+  );
+
+  text-transform: uppercase;
+
+  transform: translateY(-50%);
+
+  animation:
+    tvMarquee
+    15s
+    linear
+    infinite;
+
+  will-change: left, transform;
+}
+
+@keyframes tvMarquee {
+  0% {
+    left: 100%;
+    transform:
+      translateX(0)
+      translateY(-50%);
   }
-  to{
-    transform:translateX(-100%);
+
+  100% {
+    left: 0;
+    transform:
+      translateX(-100%)
+      translateY(-50%);
   }
 }
 
-.tv-title h1{
-  margin:0;
-  font-size:42px;
-  font-weight:900;
-  letter-spacing:2px;
-  color:#fff;
+/* ========================================
+   HOME KARAOKE TITLE
+======================================== */
+
+.tv-title h1 {
+  max-width: 100%;
+
+  margin: 0;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  color: #ffffff;
+
+  font-size: clamp(
+    24px,
+    4vw,
+    58px
+  );
+
+  font-weight: 900;
+  line-height: 1.05;
+
+  letter-spacing: clamp(
+    0.5px,
+    0.15vw,
+    2px
+  );
 }
 
-.tv-status{
-  padding:8px 14px;
-  border-radius:999px;
-  background:#222;
-  color:#ddd;
-  font-size:14px;
+/* ========================================
+   REMOTE STATUS
+======================================== */
+
+.tv-status {
+  flex: 0 0 auto;
+
+  max-width: 25vw;
+
+  padding:
+    clamp(6px, 0.7vw, 10px)
+    clamp(9px, 1.1vw, 16px);
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  border: 1px solid #3f3f46;
+  border-radius: 999px;
+
+  background: rgba(24, 24, 27, 0.92);
+  color: #d4d4d8;
+
+  font-size: clamp(
+    9px,
+    1vw,
+    15px
+  );
 }
+
+/* ========================================
+   VIDEO SCREEN
+======================================== */
+
+.screen {
+  position: relative;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: clamp(
+    16px,
+    2vw,
+    32px
+  );
+
+  background: #000000;
+
+  box-shadow:
+    0 24px 60px
+    rgba(0, 0, 0, 0.45);
+}
+
+/* ========================================
+   YOUTUBE PLAYER
+======================================== */
+
+.player {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+}
+
+.player iframe {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  border: 0;
+}
+
+/* ========================================
+   READY / STANDBY SCREEN
+======================================== */
+
+.standby {
+  position: absolute;
+  inset: 0;
+
+  display: grid;
+  place-content: center;
+
+  padding: 24px;
+
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #3b0764 0%,
+      #16021f 45%,
+      #09090b 100%
+    );
+}
+
+.standby div {
+  font-size: clamp(
+    58px,
+    8vw,
+    130px
+  );
+
+  line-height: 1;
+}
+
+.standby h2 {
+  margin:
+    clamp(8px, 1vh, 14px)
+    0;
+
+  font-size: clamp(
+    28px,
+    3vw,
+    52px
+  );
+
+  line-height: 1.15;
+}
+
+.standby p {
+  max-width: 80vw;
+
+  margin: 0 auto;
+
+  color: #c4b5fd;
+
+  font-size: clamp(
+    14px,
+    1.4vw,
+    24px
+  );
+
+  line-height: 1.6;
+}
+
+/* ========================================
+   FOOTER
+======================================== */
+
+footer {
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(
+    60px,
+    8vh,
+    110px
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: clamp(
+    14px,
+    3vw,
+    44px
+  );
+
+  padding:
+    clamp(4px, 0.6vh, 10px)
+    clamp(4px, 0.6vw, 10px);
+
+  overflow: hidden;
+}
+
+footer > div {
+  min-width: 0;
+}
+
+footer small,
+footer strong,
+footer span {
+  display: block;
+}
+
+footer small {
+  color: #a78bfa;
+
+  font-size: clamp(
+    9px,
+    0.8vw,
+    14px
+  );
+
+  letter-spacing: 0.18em;
+}
+
+footer strong {
+  max-width: 64vw;
+
+  margin:
+    clamp(3px, 0.4vh, 7px)
+    0;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  font-size: clamp(
+    15px,
+    1.3vw,
+    23px
+  );
+}
+
+footer span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  color: #a1a1aa;
+
+  font-size: clamp(
+    11px,
+    0.9vw,
+    16px
+  );
+}
+
+/* ========================================
+   NEXT SONG
+======================================== */
+
+.next {
+  flex: 0 0 auto;
+
+  width: min(
+    28vw,
+    420px
+  );
+
+  padding-left: clamp(
+    12px,
+    2vw,
+    30px
+  );
+
+  border-left: 1px solid #3f3f46;
+
+  overflow: hidden;
+}
+
+.next strong {
+  max-width: 100%;
+
+  font-size: clamp(
+    12px,
+    1vw,
+    18px
+  );
+}
+
+/* ========================================
+   TABLET / VERTICAL SCREEN
+======================================== */
+
+@media (max-aspect-ratio: 4 / 3) {
+  .tv-shell {
+    padding:
+      14px
+      14px;
+  }
+
+  .tv-title h1 {
+    font-size: clamp(
+      24px,
+      5vw,
+      44px
+    );
+  }
+
+  .screen {
+    border-radius: 20px;
+  }
+
+  .tv-status {
+    max-width: 30vw;
+  }
+
+  footer strong {
+    max-width: 58vw;
+  }
+}
+
+/* ========================================
+   PHONE SCREEN
+======================================== */
+
+@media (max-width: 700px) {
+  .tv-shell {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .tv-header {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tv-marquee {
+    height: 22px;
+    margin-bottom: 3px;
+  }
+
+  .tv-marquee span {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    animation-duration: 12s;
+  }
+
+  .tv-title h1 {
+    font-size: clamp(
+      22px,
+      6vw,
+      34px
+    );
+  }
+
+  .tv-status {
+    max-width: 92px;
+
+    padding:
+      6px
+      8px;
+
+    font-size: 9px;
+  }
+
+  .screen {
+    border-radius: 16px;
+  }
+
+  .standby {
+    padding: 16px;
+  }
+
+  .standby div {
+    font-size: 64px;
+  }
+
+  .standby h2 {
+    font-size: 26px;
+  }
+
+  .standby p {
+    font-size: 13px;
+  }
+
+  footer {
+    min-height: 62px;
+    gap: 10px;
+  }
+
+  footer small {
+    font-size: 8px;
+  }
+
+  footer strong {
+    max-width: 58vw;
+    font-size: 14px;
+  }
+
+  footer span {
+    font-size: 10px;
+  }
+
+  .next {
+    width: 34vw;
+    padding-left: 10px;
+  }
+
+  .next strong {
+    font-size: 10px;
+  }
+}
+
+/* ========================================
+   VERY SMALL PHONE
+======================================== */
+
+@media (max-width: 430px) {
+  .tv-shell {
+    padding: 8px;
+  }
+
+  .tv-marquee span {
+    font-size: 13px;
+  }
+
+  .tv-title h1 {
+    font-size: 22px;
+  }
+
+  .tv-status {
+    max-width: 72px;
+    font-size: 8px;
+  }
+
+  footer strong {
+    max-width: 55vw;
+  }
+
+  .next {
+    width: 37vw;
+  }
+}
+
+/* ========================================
+   REDUCED MOTION
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-marquee span {
+    position: static;
+    transform: none;
+    animation: none;
+  }
+    }
