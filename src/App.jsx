@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+eEffect, useRef, useState } from "react";
 import { configured, supabase } from "./lib/supabase";
 
 const ROOM_ID =
@@ -314,9 +314,7 @@ export default function App() {
         <div className="tv-title">
           <div className="tv-marquee">
             <span>
-              KHIN THUZAR HLAING&apos;S • KHIN THUZAR HLAING&apos;S • KHIN
-              THUZAR HLAING&apos;S
-            </span>
+              💜 Khin Thuzar Hlaing 💜.❤️ Khin Thuzar Hlaing ❤️.💚 Khin Thuzar Hlaing 💚  </span>
           </div>
 
           <h1>HOME KARAOKE 🎤</h1>
