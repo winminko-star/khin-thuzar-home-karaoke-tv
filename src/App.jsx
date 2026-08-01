@@ -344,7 +344,11 @@ export default function App() {
 
         {(!song || !playerUnlocked) && (
           <div className="standby">
-            <div>🎤</div>
+            <div><img
+  src="/logo.png"
+  alt="Khin Thuzar Hlaing"
+  className="standby-logo"
+/></div>
 
             <h2>{!playerUnlocked ? "Start Karaoke" : "Ready to Sing"}</h2>
 
