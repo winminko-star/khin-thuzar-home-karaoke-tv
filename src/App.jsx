@@ -115,6 +115,9 @@ function getYouTubeErrorMessage(code) {
 
   return messages[code] || `YouTube error: ${code}`;
 }
+function clampVolume(value) {
+  return Math.max(0, Math.min(100, Number(value) || 0));
+}
 
 export default function App() {
   const playerHost = useRef(null);
@@ -255,6 +258,57 @@ export default function App() {
             player.current?.stopVideo();
             return;
           }
+          if (type === "VOLUME_UP") {
+  const currentVolume =
+    player.current?.getVolume?.() ?? 50;
+
+  const nextVolume = clampVolume(
+    currentVolume + 10
+  );
+
+  player.current?.unMute?.();
+  player.current?.setVolume?.(nextVolume);
+
+  setStatus(`Volume ${nextVolume}%`);
+  return;
+}
+
+if (type === "VOLUME_DOWN") {
+  const currentVolume =
+    player.current?.getVolume?.() ?? 50;
+
+  const nextVolume = clampVolume(
+    currentVolume - 10
+  );
+
+  player.current?.setVolume?.(nextVolume);
+
+  if (nextVolume === 0) {
+    player.current?.mute?.();
+    setStatus("Muted");
+  } else {
+    setStatus(`Volume ${nextVolume}%`);
+  }
+
+  return;
+}
+
+if (type === "TOGGLE_MUTE") {
+  if (player.current?.isMuted?.()) {
+    player.current?.unMute?.();
+
+    setStatus(
+      `Volume ${
+        player.current?.getVolume?.() ?? 50
+      }%`
+    );
+  } else {
+    player.current?.mute?.();
+    setStatus("Muted");
+  }
+
+  return;
+}
 
           if (type === "CLEAR_QUEUE") {
             pendingVideoRef.current = null;
