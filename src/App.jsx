@@ -362,25 +362,50 @@ export default function App() {
 
     loadQueueFromDatabase();
 
-    const realtimeQueueChannel = supabase
-      .channel(`tv-queue:${ROOM_ID}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "karaoke_queue",
-          filter: `room_id=eq.${ROOM_ID}`,
-        },
-        () => {
-          window.clearTimeout(queueReloadTimer.current);
+    const reloadTvQueue = () => {
+  window.clearTimeout(queueReloadTimer.current);
 
-          queueReloadTimer.current = window.setTimeout(() => {
-            loadQueueFromDatabase();
-          }, 180);
-        }
-      )
-      .subscribe();
+  queueReloadTimer.current = window.setTimeout(() => {
+    loadQueueFromDatabase();
+  }, 180);
+};
+
+const realtimeQueueChannel = supabase
+  .channel(`tv-queue:${ROOM_ID}`)
+
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "karaoke_queue",
+      filter: `room_id=eq.${ROOM_ID}`,
+    },
+    reloadTvQueue
+  )
+
+  .on(
+    "postgres_changes",
+    {
+      event: "UPDATE",
+      schema: "public",
+      table: "karaoke_queue",
+      filter: `room_id=eq.${ROOM_ID}`,
+    },
+    reloadTvQueue
+  )
+
+  .on(
+    "postgres_changes",
+    {
+      event: "DELETE",
+      schema: "public",
+      table: "karaoke_queue",
+    },
+    reloadTvQueue
+  )
+
+  .subscribe();
 
     queueChannel.current = realtimeQueueChannel;
 
