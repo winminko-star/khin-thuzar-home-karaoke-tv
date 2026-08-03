@@ -499,10 +499,13 @@ const realtimeQueueChannel = supabase
               return;
             }
             if (type === "SHOW_POPUP") {
+  setStatus("Popup received");
+
   setShowPopup(true);
 
   setTimeout(() => {
     setShowPopup(false);
+    setStatus("Remote connected");
   }, 4000);
 
   return;
