@@ -492,24 +492,28 @@ const realtimeQueueChannel = supabase
 
             return;
           }
+          if (type === "SHOW_POPUP") {
+  setStatus("Popup received");
+  setShowPopup(true);
+
+  setTimeout(() => {
+    setShowPopup(false);
+    setStatus(
+      playerUnlockedRef.current
+        ? "Remote connected"
+        : "Remote ready"
+    );
+  }, 4000);
+
+  return;
+          }
 
           if (type === "PLAY") {
             if (!playerUnlockedRef.current) {
               setStatus("TV မှာ Start Karaoke နှိပ်ပါ");
               return;
             }
-            if (type === "SHOW_POPUP") {
-  setStatus("Popup received");
-
-  setShowPopup(true);
-
-  setTimeout(() => {
-    setShowPopup(false);
-    setStatus("Remote connected");
-  }, 4000);
-
-  return;
-            }
+            
 
             player.current?.playVideo();
             return;
