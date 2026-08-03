@@ -800,3 +800,22 @@ footer span {
 .tv-header{
     padding-bottom:6px;
 }
+.popup-overlay{
+  position:fixed;
+  inset:0;
+
+  background:rgba(0,0,0,.88);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  z-index:999999;
+}
+
+.popup-image{
+  max-width:95vw;
+  max-height:95vh;
+
+  object-fit:contain;
+}
