@@ -158,6 +158,7 @@ export default function App() {
   const [nextSong, setNextSong] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerUnlocked, setPlayerUnlocked] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const [status, setStatus] = useState(
     configured ? "Connecting…" : "Supabase not configured"
   );
@@ -497,6 +498,15 @@ const realtimeQueueChannel = supabase
               setStatus("TV မှာ Start Karaoke နှိပ်ပါ");
               return;
             }
+            if (type === "SHOW_POPUP") {
+  setShowPopup(true);
+
+  setTimeout(() => {
+    setShowPopup(false);
+  }, 4000);
+
+  return;
+            }
 
             player.current?.playVideo();
             return;
@@ -695,6 +705,15 @@ if (type === "TOGGLE_MUTE") {
           <strong>{nextSong?.title || "Queue empty"}</strong>
         </div>
       </footer>
+      {showPopup && (
+  <div className="popup-overlay">
+    <img
+      src="/1785761934011.png"
+      alt="Popup"
+      className="popup-image"
+    />
+  </div>
+)}
     </main>
   );
 }
