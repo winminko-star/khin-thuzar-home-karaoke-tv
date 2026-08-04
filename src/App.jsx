@@ -683,7 +683,7 @@ if (type === "TOGGLE_MUTE") {
   }
 
   return (
-    <main className="tv-shell">
+    <main className={`tv-shell ${showTextBanner ? "has-announcement" : ""}`}>
       <header className="tv-header">
         <div className="tv-title">
           <div className="tv-marquee">
