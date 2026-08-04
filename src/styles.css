@@ -819,3 +819,71 @@ footer span {
 
   object-fit:contain;
 }
+.announcement-banner {
+  position: relative;
+  z-index: 50;
+
+  margin: 4px 18px 10px;
+  padding: 13px 22px;
+
+  overflow: hidden;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.22);
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20, 20, 28, 0.82),
+      rgba(42, 30, 70, 0.74)
+    );
+
+  box-shadow:
+    0 12px 35px
+      rgba(0, 0, 0, 0.34),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.12);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.announcement-banner-glow {
+  position: absolute;
+  inset: -80% 25% auto;
+
+  height: 120px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(167, 139, 250, 0.32),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.announcement-banner-text {
+  position: relative;
+  z-index: 1;
+
+  color: #ffffff;
+
+  font-size:
+    clamp(20px, 2.2vw, 38px);
+
+  font-weight: 850;
+  line-height: 1.35;
+
+  text-align: center;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  text-shadow:
+    0 3px 14px
+    rgba(0, 0, 0, 0.7);
+}
