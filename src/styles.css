@@ -887,52 +887,10 @@ footer span {
     0 3px 14px
     rgba(0, 0, 0, 0.7);
 }
-.tv-shell {
-  width: 100%;
-  height: 100dvh;
-
-  display: grid;
+.tv-shell.has-announcement {
   grid-template-rows:
     auto
     auto
-    minmax(0, 1fr)
+    minmax(0,1fr)
     auto;
-
-  gap: clamp(8px, 1.5vh, 18px);
-
-  padding:
-    clamp(10px, 2.2vh, 26px)
-    clamp(12px, 2.2vw, 34px);
-
-  overflow: hidden;
-}
-.announcement-banner {
-  position: relative;
-  z-index: 50;
-
-  width: 100%;
-  min-height: 0;
-  height: auto;
-
-  margin: 0;
-  padding: 10px 18px;
-
-  overflow: hidden;
-
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 14px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(20, 20, 28, 0.86),
-      rgba(42, 30, 70, 0.78)
-    );
-
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
