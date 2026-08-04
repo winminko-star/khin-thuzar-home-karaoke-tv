@@ -704,7 +704,7 @@ if (type === "TOGGLE_MUTE") {
     <div className="announcement-banner-glow" />
 
     <div className="announcement-banner-text">
-      {textBannerMessage}
+      TEST
     </div>
   </div>
 )}
