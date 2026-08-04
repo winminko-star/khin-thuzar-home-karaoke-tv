@@ -159,6 +159,11 @@ export default function App() {
   const [playerReady, setPlayerReady] = useState(false);
   const [playerUnlocked, setPlayerUnlocked] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [showTextBanner, setShowTextBanner] =
+  useState(false);
+
+const [textBannerMessage, setTextBannerMessage] =
+  useState("");
   const [status, setStatus] = useState(
     configured ? "Connecting…" : "Supabase not configured"
   );
@@ -507,6 +512,34 @@ const realtimeQueueChannel = supabase
 
   return;
           }
+          if (type === "SHOW_TEXT_POPUP") {
+  const message =
+    typeof data.text === "string"
+      ? data.text.trim()
+      : "";
+
+  if (!message) {
+    return;
+  }
+
+  const durationSeconds = Math.min(
+    18000,
+    Math.max(
+      4,
+      Number(data.duration) || 4
+    )
+  );
+
+  setTextBannerMessage(message);
+  setShowTextBanner(true);
+
+  window.setTimeout(() => {
+    setShowTextBanner(false);
+    setTextBannerMessage("");
+  }, durationSeconds * 1000);
+
+  return;
+          }
 
           if (type === "PLAY") {
             if (!playerUnlockedRef.current) {
@@ -663,7 +696,20 @@ if (type === "TOGGLE_MUTE") {
         <span className="tv-status">{status}</span>
       </header>
 
-      <section className="screen">
+{showTextBanner && (
+  <div
+    className="announcement-banner"
+    role="status"
+  >
+    <div className="announcement-banner-glow" />
+
+    <div className="announcement-banner-text">
+      {textBannerMessage}
+    </div>
+  </div>
+)}
+
+<section className="screen">
         <div ref={playerHost} className="player" />
 
         {(!song || !playerUnlocked) && (
