@@ -322,19 +322,34 @@ iv_load_policy: 3,
             origin: window.location.origin,
           },
           events: {
-            onReady: () => {
-              if (cancelled) return;
+  onReady: (event) => {
+    if (cancelled) return;
 
-              playerReadyRef.current = true;
-              setPlayerReady(true);
-              setStatus(configured ? "Remote ready" : "Supabase not configured");
+    playerReadyRef.current = true;
+    setPlayerReady(true);
+    setStatus(
+      configured
+        ? "Remote ready"
+        : "Supabase not configured"
+    );
 
-              const pendingVideo = normalizeVideo(pendingVideoRef.current);
+    // Caption module ကို ပိတ်ရန် ကြိုးစားမယ်
+    try {
+      event.target.unloadModule?.("captions");
+      event.target.unloadModule?.("cc");
+    } catch (error) {
+      console.warn("Caption ပိတ်မရပါ:", error);
+    }
 
-              if (pendingVideo) {
-                player.current?.cueVideoById(pendingVideo.id);
-              }
-            },
+    const pendingVideo =
+      normalizeVideo(pendingVideoRef.current);
+
+    if (pendingVideo) {
+      event.target.cueVideoById(
+        pendingVideo.id
+      );
+    }
+  },
             onStateChange: (event) => {
               if (event.data !== window.YT.PlayerState.ENDED) return;
 
