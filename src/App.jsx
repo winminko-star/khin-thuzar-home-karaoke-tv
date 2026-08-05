@@ -320,6 +320,7 @@ cc_lang_pref: "",
 iv_load_policy: 3,
             playsinline: 1,
             enablejsapi: 1,
+            suggestedQuality: "large", // 480p စမ်းရန်
             origin: window.location.origin,
           },
           events: {
