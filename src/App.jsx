@@ -155,6 +155,7 @@ export default function App() {
   const pendingVideoRef = useRef(null);
 
   const [song, setSong] = useState(null);
+  const [showQrPopup, setShowQrPopup] = useState(false);
   const [nextSong, setNextSong] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerUnlocked, setPlayerUnlocked] = useState(false);
@@ -682,6 +683,13 @@ if (type === "TOGGLE_MUTE") {
       channel.current = null;
     };
   }, []);
+  function openQrPopup() {
+  setShowQrPopup(true);
+
+  window.setTimeout(() => {
+    setShowQrPopup(false);
+  }, 15000);
+  }
 
   function startKaraoke() {
     if (!playerReadyRef.current || !player.current) {
@@ -711,7 +719,19 @@ if (type === "TOGGLE_MUTE") {
           <h1>HOME KARAOKE 🎤</h1>
         </div>
 
-        <span className="tv-status">{status}</span>
+        <div className="tv-header-actions">
+  <button
+    type="button"
+    className="qr-button"
+    onClick={openQrPopup}
+    aria-label="Open Remote QR Code"
+    title="Open Remote QR Code"
+  >
+    🇲🇲
+  </button>
+
+  <span className="tv-status">{status}</span>
+</div>
       </header>
 
 {showTextBanner && (
@@ -783,6 +803,36 @@ if (type === "TOGGLE_MUTE") {
       alt="Popup"
       className="popup-image"
     />
+  </div>
+)}
+      {showQrPopup && (
+  <div
+    className="qr-overlay"
+    onClick={() => setShowQrPopup(false)}
+  >
+    <div
+      className="qr-popup"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <button
+        type="button"
+        className="qr-close-button"
+        onClick={() => setShowQrPopup(false)}
+        aria-label="Close QR Code"
+      >
+        ✕
+      </button>
+
+      <h2>Scan to Open Remote</h2>
+
+      <img
+        src="/remote-qr.png"
+        alt="Karaoke Remote Website QR Code"
+        className="qr-image"
+      />
+
+      <p>ဖုန်း Camera ဖြင့် Scan လုပ်ပါ</p>
+    </div>
   </div>
 )}
     </main>
