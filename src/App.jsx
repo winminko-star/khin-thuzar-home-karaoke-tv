@@ -49,15 +49,71 @@ function extractYouTubeVideoId(value) {
 
   return "";
 }
+function getSourceType(video) {
+  if (video?.sourceType === "usb") {
+    return "usb";
+  }
 
+  const id =
+    video?.id ||
+    video?.videoId ||
+    "";
+
+  return String(id).startsWith("usb:")
+    ? "usb"
+    : "youtube";
+}
+
+function getUsbFileId(video) {
+  const id = String(video?.id || "");
+
+  return id.startsWith("usb:")
+    ? id.slice(4)
+    : id;
+}
 function normalizeVideo(video) {
-  if (!video || typeof video !== "object") return null;
+  if (!video || typeof video !== "object") {
+    return null;
+  }
+
+  const sourceType = getSourceType(video);
+
+  if (sourceType === "usb") {
+    const rawId = String(
+      video.id ||
+        video.fileId ||
+        video.uri ||
+        video.path ||
+        ""
+    );
+
+    if (!rawId) {
+      return null;
+    }
+
+    return {
+      ...video,
+      id: rawId.startsWith("usb:")
+        ? rawId
+        : `usb:${rawId}`,
+      sourceType: "usb"
+    };
+  }
 
   const id = extractYouTubeVideoId(
-    video.id || video.videoId || video.youtube_url || video.url
+    video.id ||
+      video.videoId ||
+      video.youtube_url ||
+      video.url
   );
 
-  return id ? { ...video, id } : null;
+  return id
+    ? {
+        ...video,
+        id,
+        sourceType: "youtube"
+      }
+    : null;
 }
 
 function getNextQueueSong(queue, currentIndex) {
@@ -74,24 +130,40 @@ function getNextQueueSong(queue, currentIndex) {
 
 
 function queueRowToSong(row) {
+  const sourceType = String(
+    row.video_id || ""
+  ).startsWith("usb:")
+    ? "usb"
+    : "youtube";
+
   return {
     id: row.video_id,
+    sourceType,
     queueId: `db-${row.id}`,
     dbId: row.id,
     title: row.title || "",
     channel: row.channel || "",
-    thumbnail: row.thumbnail || "",
+    thumbnail: row.thumbnail || ""
   };
 }
 
 function stateRowToSong(row) {
-  if (!row?.current_video_id) return null;
+  if (!row?.current_video_id) {
+    return null;
+  }
+
+  const sourceType = String(
+    row.current_video_id
+  ).startsWith("usb:")
+    ? "usb"
+    : "youtube";
 
   return {
     id: row.current_video_id,
+    sourceType,
     title: row.current_title || "",
     channel: row.current_channel || "",
-    thumbnail: row.current_thumbnail || "",
+    thumbnail: row.current_thumbnail || ""
   };
 }
 
@@ -140,6 +212,74 @@ function getYouTubeErrorMessage(code) {
 }
 function clampVolume(value) {
   return Math.max(0, Math.min(100, Number(value) || 0));
+}
+function getAndroidUsbBridge() {
+  return window.AndroidUsb || null;
+}
+
+function parseUsbSongs(value) {
+  try {
+    const parsed =
+      typeof value === "string"
+        ? JSON.parse(value)
+        : value;
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.map((song) => {
+      const rawId =
+        song.id ||
+        song.fileId ||
+        song.uri ||
+        song.path ||
+        song.title;
+
+      const id = String(rawId).startsWith(
+        "usb:"
+      )
+        ? String(rawId)
+        : `usb:${rawId}`;
+
+      const title =
+        song.title ||
+        song.name ||
+        song.fileName ||
+        "USB Video";
+
+      const searchText = [
+        title,
+        song.name,
+        song.fileName,
+        song.folder,
+        song.path,
+        song.searchText
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      return {
+        ...song,
+        id,
+        sourceType: "usb",
+        title,
+        channel:
+          song.channel ||
+          song.folder ||
+          "USB Storage",
+        thumbnail: song.thumbnail || "",
+        searchText
+      };
+    });
+  } catch (error) {
+    console.error(
+      "USB song list parse error:",
+      error
+    );
+
+    return [];
+  }
 }
 
 export default function App() {
@@ -213,24 +353,62 @@ const [textBannerMessage, setTextBannerMessage] =
 
     const selectedVideo = normalizeVideo(activeSong);
 
-    if (!selectedVideo) {
-      setStatus("Database video ID မမှန်ပါ။");
-      return;
-    }
+if (!selectedVideo) {
+  setStatus("Database video ID မမှန်ပါ။");
+  return;
+}
 
-    const changedVideo = pendingVideoRef.current?.id !== selectedVideo.id;
-    pendingVideoRef.current = selectedVideo;
-    setSong(selectedVideo);
+const changedVideo =
+  pendingVideoRef.current?.id !==
+  selectedVideo.id;
 
-    if (!changedVideo || !playerReadyRef.current || !player.current) return;
+pendingVideoRef.current = selectedVideo;
+setSong(selectedVideo);
 
-    if (playerUnlockedRef.current) {
-      player.current.loadVideoById(selectedVideo.id);
-      setStatus("Remote connected");
-    } else {
-      player.current.cueVideoById(selectedVideo.id);
-      setStatus("TV မှာ Start Karaoke နှိပ်ပါ");
-    }
+if (!changedVideo) {
+  return;
+}
+
+if (selectedVideo.sourceType === "usb") {
+  const bridge = getAndroidUsbBridge();
+
+  if (!bridge?.playUsbVideo) {
+    setStatus(
+      "Android USB Player မချိတ်ရသေးပါ။"
+    );
+    return;
+  }
+
+  player.current?.stopVideo?.();
+
+  bridge.playUsbVideo(
+    getUsbFileId(selectedVideo)
+  );
+
+  setStatus("USB သီချင်းဖွင့်နေသည်");
+  return;
+}
+
+if (
+  !playerReadyRef.current ||
+  !player.current
+) {
+  return;
+}
+
+if (playerUnlockedRef.current) {
+  player.current.loadVideoById(
+    selectedVideo.id
+  );
+  setStatus("Remote connected");
+} else {
+  player.current.cueVideoById(
+    selectedVideo.id
+  );
+  setStatus(
+    "TV မှာ Start Karaoke နှိပ်ပါ"
+  );
+}
   }, []);
 
   const normalizeQueuePositions = useCallback(async () => {
@@ -376,11 +554,15 @@ iv_load_policy: 3,
       });
 
     return () => {
-      cancelled = true;
-      playerReadyRef.current = false;
-      player.current?.destroy?.();
-      player.current = null;
-    };
+  cancelled = true;
+  playerReadyRef.current = false;
+
+  getAndroidUsbBridge()
+    ?.stopUsbVideo?.();
+
+  player.current?.destroy?.();
+  player.current = null;
+};
   }, [advancePlaybackFromDatabase]);
 
   useEffect(() => {
@@ -490,32 +672,134 @@ const realtimeQueueChannel = supabase
           const { type, payload: data = {} } = payload || {};
 
           if (type === "LOAD_AND_PLAY") {
-            const selectedVideo = normalizeVideo(data.video);
+  const selectedVideo =
+    normalizeVideo(data.video);
 
-            if (!selectedVideo) {
-              console.error("Invalid video object:", data.video);
-              setStatus("Video ID မမှန်ပါ။");
-              return;
-            }
+  if (!selectedVideo) {
+    console.error(
+      "Invalid video object:",
+      data.video
+    );
 
-            pendingVideoRef.current = selectedVideo;
-            setSong(selectedVideo);
-            setNextSong(getNextQueueSong(data.queue, data.index));
+    setStatus("Video ID မမှန်ပါ။");
+    return;
+  }
 
-            if (!playerReadyRef.current || !player.current) {
-              setStatus("YouTube player loading…");
-              return;
-            }
+  pendingVideoRef.current =
+    selectedVideo;
 
-            if (playerUnlockedRef.current) {
-              player.current.loadVideoById(selectedVideo.id);
-              setStatus("Remote connected");
-            } else {
-              player.current.cueVideoById(selectedVideo.id);
-              setStatus("TV မှာ Start Karaoke နှိပ်ပါ");
-            }
+  setSong(selectedVideo);
 
-            return;
+  setNextSong(
+    getNextQueueSong(
+      data.queue,
+      data.index
+    )
+  );
+
+  if (
+    selectedVideo.sourceType === "usb"
+  ) {
+    const bridge =
+      getAndroidUsbBridge();
+
+    if (!bridge?.playUsbVideo) {
+      setStatus(
+        "Android USB Player မချိတ်ရသေးပါ။"
+      );
+      return;
+    }
+
+    player.current?.stopVideo?.();
+
+    bridge.playUsbVideo(
+      getUsbFileId(selectedVideo)
+    );
+
+    setStatus(
+      "USB သီချင်းဖွင့်နေသည်"
+    );
+
+    return;
+  }
+
+  if (
+    !playerReadyRef.current ||
+    !player.current
+  ) {
+    setStatus(
+      "YouTube player loading…"
+    );
+    return;
+  }
+
+  getAndroidUsbBridge()
+    ?.stopUsbVideo?.();
+
+  if (playerUnlockedRef.current) {
+    player.current.loadVideoById(
+      selectedVideo.id
+    );
+
+    setStatus("Remote connected");
+  } else {
+    player.current.cueVideoById(
+      selectedVideo.id
+    );
+
+    setStatus(
+      "TV မှာ Start Karaoke နှိပ်ပါ"
+    );
+  }
+
+  return;
+          }
+          if (type === "REQUEST_USB_SONGS") {
+  const bridge = getAndroidUsbBridge();
+
+  if (!bridge?.getUsbSongs) {
+    realtimeChannel.send({
+      type: "broadcast",
+      event: "tv-status",
+      payload: {
+        type: "USB_ERROR",
+        message:
+          "Android USB Bridge မချိတ်ရသေးပါ။"
+      }
+    });
+
+    return;
+  }
+
+  try {
+    const rawSongs =
+      bridge.getUsbSongs();
+
+    const songs =
+      parseUsbSongs(rawSongs);
+
+    realtimeChannel.send({
+      type: "broadcast",
+      event: "tv-status",
+      payload: {
+        type: "USB_SONGS_LIST",
+        songs
+      }
+    });
+  } catch (error) {
+    realtimeChannel.send({
+      type: "broadcast",
+      event: "tv-status",
+      payload: {
+        type: "USB_ERROR",
+        message:
+          error?.message ||
+          "USB သီချင်းစာရင်း ဖတ်မရပါ။"
+      }
+    });
+  }
+
+  return;
           }
           if (type === "SHOW_POPUP") {
   setStatus("Popup received");
@@ -562,26 +846,54 @@ const realtimeQueueChannel = supabase
           }
 
           if (type === "PLAY") {
-            if (!playerUnlockedRef.current) {
-              setStatus("TV မှာ Start Karaoke နှိပ်ပါ");
-              return;
-            }
-            
+  if (song?.sourceType === "usb") {
+    getAndroidUsbBridge()
+      ?.resumeUsbVideo?.();
 
-            player.current?.playVideo();
-            return;
+    return;
+  }
+
+  if (!playerUnlockedRef.current) {
+    setStatus(
+      "TV မှာ Start Karaoke နှိပ်ပါ"
+    );
+    return;
+  }
+
+  player.current?.playVideo();
+  return;
           }
 
           if (type === "PAUSE") {
-            player.current?.pauseVideo();
-            return;
+  if (song?.sourceType === "usb") {
+    getAndroidUsbBridge()
+      ?.pauseUsbVideo?.();
+
+    return;
+  }
+
+  player.current?.pauseVideo();
+  return;
           }
 
           if (type === "STOP") {
-            player.current?.stopVideo();
-            return;
+  if (song?.sourceType === "usb") {
+    getAndroidUsbBridge()
+      ?.stopUsbVideo?.();
+
+    return;
+  }
+
+  player.current?.stopVideo();
+  return;
           }
           if (type === "VOLUME_UP") {
+            if (song?.sourceType === "usb") {
+  getAndroidUsbBridge()
+    ?.volumeUpUsb?.();
+
+  return;
+            }
   const currentVolume =
     player.current?.getVolume?.() ?? 50;
 
@@ -597,6 +909,12 @@ const realtimeQueueChannel = supabase
 }
 
 if (type === "VOLUME_DOWN") {
+  if (song?.sourceType === "usb") {
+  getAndroidUsbBridge()
+    ?.volumeDownUsb?.();
+
+  return;
+  }
   const currentVolume =
     player.current?.getVolume?.() ?? 50;
 
@@ -617,6 +935,12 @@ if (type === "VOLUME_DOWN") {
 }
 
 if (type === "TOGGLE_MUTE") {
+  if (song?.sourceType === "usb") {
+  getAndroidUsbBridge()
+    ?.toggleMuteUsb?.();
+
+  return;
+  }
   if (player.current?.isMuted?.()) {
     player.current?.unMute?.();
 
@@ -634,11 +958,17 @@ if (type === "TOGGLE_MUTE") {
 }
 
           if (type === "CLEAR_QUEUE") {
-            pendingVideoRef.current = null;
-            setSong(null);
-            setNextSong(null);
-            player.current?.stopVideo();
-            return;
+  pendingVideoRef.current = null;
+
+  setSong(null);
+  setNextSong(null);
+
+  player.current?.stopVideo?.();
+
+  getAndroidUsbBridge()
+    ?.stopUsbVideo?.();
+
+  return;
           }
 
           if (type === "SYNC_QUEUE") {
@@ -693,20 +1023,65 @@ if (type === "TOGGLE_MUTE") {
   }
 
   function startKaraoke() {
-    if (!playerReadyRef.current || !player.current) {
-      setStatus("YouTube Player ပြင်ဆင်နေသည်…");
+  playerUnlockedRef.current = true;
+  setPlayerUnlocked(true);
+
+  setStatus(
+    configured
+      ? "Remote connected"
+      : "Ready"
+  );
+
+  const selectedVideo = normalizeVideo(
+    song || pendingVideoRef.current
+  );
+
+  if (!selectedVideo) {
+    return;
+  }
+
+  if (selectedVideo.sourceType === "usb") {
+    const bridge = getAndroidUsbBridge();
+
+    if (!bridge?.playUsbVideo) {
+      setStatus(
+        "Android USB Player မချိတ်ရသေးပါ။"
+      );
       return;
     }
 
-    playerUnlockedRef.current = true;
-    setPlayerUnlocked(true);
-    setStatus(configured ? "Remote connected" : "Ready");
+    player.current?.stopVideo?.();
 
-    const selectedVideo = normalizeVideo(song || pendingVideoRef.current);
+    bridge.playUsbVideo(
+      getUsbFileId(selectedVideo)
+    );
 
-    if (selectedVideo) {
-      player.current.loadVideoById(selectedVideo.id);
-    }
+    setStatus("USB သီချင်းဖွင့်နေသည်");
+    return;
+  }
+
+  if (
+    !playerReadyRef.current ||
+    !player.current
+  ) {
+    setStatus(
+      "YouTube Player ပြင်ဆင်နေသည်…"
+    );
+    return;
+  }
+
+  getAndroidUsbBridge()
+    ?.stopUsbVideo?.();
+
+  player.current.loadVideoById(
+    selectedVideo.id
+  );
+
+  setStatus(
+    configured
+      ? "Remote connected"
+      : "Ready"
+  );
   }
 
   return (
