@@ -1158,13 +1158,18 @@ if (type === "TOGGLE_MUTE") {
 
             {!playerUnlocked && (
               <button
-                type="button"
-                className="start-karaoke-button"
-                onClick={startKaraoke}
-                disabled={!playerReady}
-              >
-                ▶ Start Karaoke
-              </button>
+  type="button"
+  className="start-karaoke-button"
+  onClick={startKaraoke}
+  disabled={
+    !playerReady &&
+    getSourceType(
+      song || pendingVideoRef.current
+    ) !== "usb"
+  }
+>
+  ▶ Start Karaoke
+</button>
             )}
           </div>
         )}
