@@ -345,10 +345,15 @@ const [textBannerMessage, setTextBannerMessage] =
     const activeSong = stateRowToSong(data);
 
     if (!activeSong) {
-      pendingVideoRef.current = null;
-      setSong(null);
-      player.current?.stopVideo?.();
-      return;
+  pendingVideoRef.current = null;
+  setSong(null);
+
+  player.current?.stopVideo?.();
+
+  getAndroidUsbBridge()
+    ?.stopUsbVideo?.();
+
+  return;
     }
 
     const selectedVideo = normalizeVideo(activeSong);
@@ -522,13 +527,18 @@ iv_load_policy: 3,
     }
 
     const pendingVideo =
-      normalizeVideo(pendingVideoRef.current);
+  normalizeVideo(
+    pendingVideoRef.current
+  );
 
-    if (pendingVideo) {
-      event.target.cueVideoById(
-        pendingVideo.id
-      );
-    }
+if (
+  pendingVideo &&
+  pendingVideo.sourceType === "youtube"
+) {
+  event.target.cueVideoById(
+    pendingVideo.id
+  );
+}
   },
             onStateChange: (event) => {
               if (event.data !== window.YT.PlayerState.ENDED) return;
@@ -846,7 +856,7 @@ const realtimeQueueChannel = supabase
           }
 
           if (type === "PLAY") {
-  if (song?.sourceType === "usb") {
+  if (getSourceType(pendingVideoRef.current) === "usb") {
     getAndroidUsbBridge()
       ?.resumeUsbVideo?.();
 
@@ -865,7 +875,7 @@ const realtimeQueueChannel = supabase
           }
 
           if (type === "PAUSE") {
-  if (song?.sourceType === "usb") {
+  if (getSourceType(pendingVideoRef.current) === "usb") {
     getAndroidUsbBridge()
       ?.pauseUsbVideo?.();
 
@@ -877,7 +887,7 @@ const realtimeQueueChannel = supabase
           }
 
           if (type === "STOP") {
-  if (song?.sourceType === "usb") {
+  if (getSourceType(pendingVideoRef.current) === "usb") {
     getAndroidUsbBridge()
       ?.stopUsbVideo?.();
 
@@ -888,7 +898,7 @@ const realtimeQueueChannel = supabase
   return;
           }
           if (type === "VOLUME_UP") {
-            if (song?.sourceType === "usb") {
+            if (getSourceType(pendingVideoRef.current) === "usb") {
   getAndroidUsbBridge()
     ?.volumeUpUsb?.();
 
@@ -909,7 +919,7 @@ const realtimeQueueChannel = supabase
 }
 
 if (type === "VOLUME_DOWN") {
-  if (song?.sourceType === "usb") {
+  if (getSourceType(pendingVideoRef.current) === "usb") {
   getAndroidUsbBridge()
     ?.volumeDownUsb?.();
 
@@ -935,7 +945,7 @@ if (type === "VOLUME_DOWN") {
 }
 
 if (type === "TOGGLE_MUTE") {
-  if (song?.sourceType === "usb") {
+  if (getSourceType(pendingVideoRef.current) === "usb") {
   getAndroidUsbBridge()
     ?.toggleMuteUsb?.();
 
