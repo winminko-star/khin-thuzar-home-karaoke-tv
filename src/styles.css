@@ -333,33 +333,17 @@ body {
 }
 
 .standby h2 {
-  margin:
-    clamp(8px, 1vh, 14px)
-    0;
-
-  font-size: clamp(
-    28px,
-    3vw,
-    52px
-  );
-
-  line-height: 1.15;
+  margin: 3px 0 1px;
+  font-size: clamp(18px, 1.7vw, 28px);
+  line-height: 1.05;
 }
 
 .standby p {
   max-width: 80vw;
-
   margin: 0 auto;
-
   color: #c4b5fd;
-
-  font-size: clamp(
-    14px,
-    1.4vw,
-    24px
-  );
-
-  line-height: 1.6;
+  font-size: clamp(10px, 0.9vw, 15px);
+  line-height: 1.2;
 }
 
 /* ========================================
@@ -760,33 +744,33 @@ footer span {
     animation: none;
   }
     }
+
 .start-karaoke-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  margin: 20px auto 0;
-  padding: 14px 28px;
+  margin: 6px auto 0;
+  padding: 7px 16px;
 
   border: 0;
   border-radius: 999px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #7c3aed,
-      #db2777
-    );
+  background: linear-gradient(
+    135deg,
+    #7c3aed,
+    #db2777
+  );
 
   color: #ffffff;
-  font-size: clamp(16px, 1.6vw, 26px);
+  font-size: clamp(11px, 1vw, 16px);
   font-weight: 800;
   line-height: 1;
 
   cursor: pointer;
 
   box-shadow:
-    0 12px 35px
+    0 8px 22px
     rgba(124, 58, 237, 0.4);
 
   transition:
@@ -794,7 +778,6 @@ footer span {
     opacity 0.15s ease,
     box-shadow 0.15s ease;
 }
-
 .start-karaoke-button:hover {
   transform: translateY(-2px);
 
@@ -813,14 +796,6 @@ footer span {
   transform: none;
 }
 
-/* ဖုန်းအတွက် */
-@media (max-width: 700px) {
-  .start-karaoke-button {
-    margin-top: 16px;
-    padding: 12px 22px;
-    font-size: 15px;
-  }
-}
 .standby-banner {
   display: block;
   width: min(900px, 92vw);
