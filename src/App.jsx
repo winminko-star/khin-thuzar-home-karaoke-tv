@@ -483,6 +483,81 @@ if (playerUnlockedRef.current) {
       { onConflict: "room_id" }
     );
   }, [normalizeQueuePositions]);
+  useEffect(() => {
+  const handleAndroidReady = () => {
+    setStatus("Android USB ready");
+  };
+
+  const handleUsbSongsUpdated = () => {
+    const bridge = getAndroidUsbBridge();
+
+    if (!bridge?.getUsbSongs) return;
+
+    try {
+      const songs = parseUsbSongs(
+        bridge.getUsbSongs()
+      );
+
+      channel.current?.send({
+        type: "broadcast",
+        event: "tv-status",
+        payload: {
+          type: "USB_SONGS_LIST",
+          songs
+        }
+      });
+    } catch (error) {
+      console.error(
+        "USB songs update error:",
+        error
+      );
+    }
+  };
+
+  const handleUsbVideoEnded = () => {
+    advancePlaybackFromDatabase().finally(() => {
+      channel.current?.send({
+        type: "broadcast",
+        event: "tv-status",
+        payload: {
+          type: "VIDEO_ENDED"
+        }
+      });
+    });
+  };
+
+  window.addEventListener(
+    "ANDROID_USB_READY",
+    handleAndroidReady
+  );
+
+  window.addEventListener(
+    "USB_SONGS_UPDATED",
+    handleUsbSongsUpdated
+  );
+
+  window.addEventListener(
+    "USB_VIDEO_ENDED",
+    handleUsbVideoEnded
+  );
+
+  return () => {
+    window.removeEventListener(
+      "ANDROID_USB_READY",
+      handleAndroidReady
+    );
+
+    window.removeEventListener(
+      "USB_SONGS_UPDATED",
+      handleUsbSongsUpdated
+    );
+
+    window.removeEventListener(
+      "USB_VIDEO_ENDED",
+      handleUsbVideoEnded
+    );
+  };
+}, [advancePlaybackFromDatabase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1138,11 +1213,13 @@ if (type === "TOGGLE_MUTE") {
 
         {(!song || !playerUnlocked) && (
           <div className="standby">
-            <div><img
-  src="/logo.png"
-  alt="Khin Thuzar Hlaing"
-  className="standby-logo"
-/></div>
+            <div>
+  <img
+    src="/tv_banner.png"
+    alt="Khin Thuzar Home Karaoke TV"
+    className="standby-banner"
+  />
+</div>
 
             <h2>{!playerUnlocked ? "Start Karaoke" : "Ready to Sing"}</h2>
 
