@@ -939,27 +939,7 @@ const realtimeQueueChannel = supabase
   return;
           }
 
-  const bridge = getAndroidUsbBridge();
-
-  if (bridge?.showTextPopup) {
-    bridge.showTextPopup(
-      message,
-      durationSeconds * 1000
-    );
-
-    return;
-  }
-
-  setTextBannerMessage(message);
-  setShowTextBanner(true);
-
-  window.setTimeout(() => {
-    setShowTextBanner(false);
-    setTextBannerMessage("");
-  }, durationSeconds * 1000);
-
-  return;
-          }
+  
 
           if (type === "PLAY") {
   if (getSourceType(pendingVideoRef.current) === "usb") {
