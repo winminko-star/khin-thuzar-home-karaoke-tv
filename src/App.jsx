@@ -1114,6 +1114,16 @@ if (type === "TOGGLE_MUTE") {
     };
   }, []);
   function openQrPopup() {
+  const bridge = getAndroidUsbBridge();
+
+  if (bridge?.showQrPopup) {
+    bridge.showQrPopup(
+      `${window.location.origin}/remote-qr.png`,
+      15000
+    );
+    return;
+  }
+
   setShowQrPopup(true);
 
   window.setTimeout(() => {
