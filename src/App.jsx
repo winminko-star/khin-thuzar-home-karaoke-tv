@@ -894,7 +894,6 @@ const realtimeQueueChannel = supabase
       `${window.location.origin}/1785761934011.png`,
       4000
     );
-
     return;
   }
 
@@ -912,17 +911,33 @@ const realtimeQueueChannel = supabase
       ? data.text.trim()
       : "";
 
-  if (!message) {
-    return;
-  }
+  if (!message) return;
 
   const durationSeconds = Math.min(
     18000,
-    Math.max(
-      4,
-      Number(data.duration) || 4
-    )
+    Math.max(4, Number(data.duration) || 4)
   );
+
+  const bridge = getAndroidUsbBridge();
+
+  if (bridge?.showTextPopup) {
+    bridge.showTextPopup(
+      message,
+      durationSeconds * 1000
+    );
+    return;
+  }
+
+  setTextBannerMessage(message);
+  setShowTextBanner(true);
+
+  window.setTimeout(() => {
+    setShowTextBanner(false);
+    setTextBannerMessage("");
+  }, durationSeconds * 1000);
+
+  return;
+          }
 
   const bridge = getAndroidUsbBridge();
 
