@@ -887,16 +887,21 @@ const realtimeQueueChannel = supabase
   return;
           }
           if (type === "SHOW_POPUP") {
-  setStatus("Popup received");
+  const bridge = getAndroidUsbBridge();
+
+  if (bridge?.showImagePopup) {
+    bridge.showImagePopup(
+      `${window.location.origin}/1785761934011.png`,
+      4000
+    );
+
+    return;
+  }
+
   setShowPopup(true);
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     setShowPopup(false);
-    setStatus(
-      playerUnlockedRef.current
-        ? "Remote connected"
-        : "Remote ready"
-    );
   }, 4000);
 
   return;
@@ -918,6 +923,17 @@ const realtimeQueueChannel = supabase
       Number(data.duration) || 4
     )
   );
+
+  const bridge = getAndroidUsbBridge();
+
+  if (bridge?.showTextPopup) {
+    bridge.showTextPopup(
+      message,
+      durationSeconds * 1000
+    );
+
+    return;
+  }
 
   setTextBannerMessage(message);
   setShowTextBanner(true);
