@@ -452,19 +452,32 @@ if (playerUnlockedRef.current) {
     const nextRow = rows?.[0];
 
     if (!nextRow) {
-      await supabase.from("karaoke_state").upsert(
-        {
-          room_id: ROOM_ID,
-          current_video_id: null,
-          current_title: null,
-          current_channel: null,
-          current_thumbnail: null,
-          is_playing: false,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "room_id" }
-      );
-      return;
+  pendingVideoRef.current = null;
+
+  setSong(null);
+  setNextSong(null);
+
+  player.current?.stopVideo?.();
+
+  getAndroidUsbBridge()
+    ?.stopUsbVideo?.();
+
+  await supabase.from("karaoke_state").upsert(
+    {
+      room_id: ROOM_ID,
+      current_video_id: null,
+      current_title: null,
+      current_channel: null,
+      current_thumbnail: null,
+      is_playing: false,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "room_id" }
+  );
+
+  setStatus("Remote connected");
+
+  return;
     }
 
     await supabase.from("karaoke_queue").delete().eq("id", nextRow.id);
@@ -974,18 +987,40 @@ const realtimeQueueChannel = supabase
   player.current?.pauseVideo();
   return;
           }
+if (type === "STOP") {
+  const currentSourceType =
+    getSourceType(pendingVideoRef.current);
 
-          if (type === "STOP") {
-  if (getSourceType(pendingVideoRef.current) === "usb") {
+  pendingVideoRef.current = null;
+  setSong(null);
+
+  if (currentSourceType === "usb") {
     getAndroidUsbBridge()
       ?.stopUsbVideo?.();
-
-    return;
+  } else {
+    player.current?.stopVideo?.();
   }
 
-  player.current?.stopVideo();
+  if (configured && supabase) {
+    supabase.from("karaoke_state").upsert(
+      {
+        room_id: ROOM_ID,
+        current_video_id: null,
+        current_title: null,
+        current_channel: null,
+        current_thumbnail: null,
+        is_playing: false,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "room_id" }
+    );
+  }
+
+  setStatus("Remote connected");
+
   return;
-          }
+}
+        
           if (type === "VOLUME_UP") {
             if (getSourceType(pendingVideoRef.current) === "usb") {
   getAndroidUsbBridge()
