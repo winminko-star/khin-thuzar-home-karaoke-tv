@@ -596,7 +596,7 @@ if (playerUnlockedRef.current) {
     setSceneryIndex((current) => {
       return (current + 1) % sceneryImages.length;
     });
-  }, 20000);
+  }, 120000);
 
   return () => {
     window.clearInterval(timer);
