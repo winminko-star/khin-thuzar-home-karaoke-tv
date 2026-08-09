@@ -305,6 +305,22 @@ export default function App() {
 
 const [textBannerMessage, setTextBannerMessage] =
   useState("");
+  const [sceneryShow, setSceneryShow] = useState(false);
+const [sceneryIndex, setSceneryIndex] = useState(0);
+
+const sceneryImages = [
+  "/Main.png",
+  "/One.png",
+  "/Two.png",
+  "/Three.png",
+  "/Four.png",
+  "/Five.png",
+  "/Six.png",
+  "/Seven.png",
+  "/Eight.png",
+  "/Nine.png",
+  "/Ten.png",
+];
   const [status, setStatus] = useState(
     configured ? "Connecting…" : "Supabase not configured"
   );
@@ -571,6 +587,21 @@ if (playerUnlockedRef.current) {
     );
   };
 }, [advancePlaybackFromDatabase]);
+  useEffect(() => {
+  if (!sceneryShow) {
+    return undefined;
+  }
+
+  const timer = window.setInterval(() => {
+    setSceneryIndex((current) => {
+      return (current + 1) % sceneryImages.length;
+    });
+  }, 20000);
+
+  return () => {
+    window.clearInterval(timer);
+  };
+}, [sceneryShow]);
 
   useEffect(() => {
     let cancelled = false;
@@ -918,6 +949,17 @@ const realtimeQueueChannel = supabase
 
   return;
           }
+          if (type === "START_SCENERY_SHOW") {
+  setSceneryIndex(0);
+  setSceneryShow(true);
+  return;
+}
+
+if (type === "STOP_SCENERY_SHOW") {
+  setSceneryShow(false);
+  setSceneryIndex(0);
+  return;
+}
           if (type === "SHOW_TEXT_POPUP") {
   const message =
     typeof data.text === "string"
@@ -1360,6 +1402,16 @@ if (type === "TOGGLE_MUTE") {
 
       <p>ဖုန်း Camera ဖြင့် Scan လုပ်ပါ</p>
     </div>
+  </div>
+)}
+      {sceneryShow && (
+  <div className="scenery-slideshow">
+    <img
+      key={sceneryImages[sceneryIndex]}
+      src={sceneryImages[sceneryIndex]}
+      alt=""
+      className="scenery-slide-image"
+    />
   </div>
 )}
     </main>
