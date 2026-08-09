@@ -998,6 +998,43 @@ if (type === "STOP_SCENERY_SHOW") {
 
   return;
           }
+          if (type === "RE_SING") {
+  const currentSourceType =
+    getSourceType(pendingVideoRef.current);
+
+  if (!pendingVideoRef.current) {
+    setStatus("ပြန်ဆိုရန် သီချင်းမရှိပါ။");
+    return;
+  }
+
+  if (currentSourceType === "usb") {
+    const bridge = getAndroidUsbBridge();
+
+    if (!bridge?.restartUsbVideo) {
+      setStatus("USB Re-Sing မရသေးပါ။");
+      return;
+    }
+
+    bridge.restartUsbVideo();
+
+    setStatus("USB သီချင်းကို အစကနေ ပြန်ဆိုနေသည်");
+    return;
+  }
+
+  if (
+    !playerUnlockedRef.current ||
+    !player.current
+  ) {
+    setStatus("Player အဆင်သင့်မဖြစ်သေးပါ။");
+    return;
+  }
+
+  player.current.seekTo(0, true);
+  player.current.playVideo();
+
+  setStatus("သီချင်းကို အစကနေ ပြန်ဆိုနေသည်");
+  return;
+          }
 
         if (type === "PLAY") {
   if (getSourceType(pendingVideoRef.current) === "usb") {
