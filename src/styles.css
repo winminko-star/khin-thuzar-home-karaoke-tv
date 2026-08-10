@@ -1036,3 +1036,245 @@ footer span {
     filter: blur(0);
   }
 }
+/* ========================================
+   KARAOKE HEADER EFFECTS
+======================================== */
+
+/* HOME KARAOKE */
+.tv-title h1.karaoke-title {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1vw, 16px);
+
+  overflow: visible;
+
+  padding: 3px 2px 5px;
+}
+
+
+/* Rainbow HOME KARAOKE */
+.rainbow-title {
+  display: inline-block;
+
+  background: linear-gradient(
+    90deg,
+    #ff3b3b,
+    #ff9f1c,
+    #ffe600,
+    #39ff88,
+    #26d9ff,
+    #6574ff,
+    #c850ff,
+    #ff4fa3,
+    #ff3b3b
+  );
+
+  background-size: 300% 100%;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+
+  animation:
+    karaokeRainbow 5s linear infinite,
+    karaokeGlow 2.6s ease-in-out infinite alternate;
+
+  filter:
+    drop-shadow(0 0 5px rgba(255,255,255,.18));
+}
+
+
+@keyframes karaokeRainbow {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+
+@keyframes karaokeGlow {
+  from {
+    filter:
+      drop-shadow(0 0 3px rgba(120,100,255,.35));
+  }
+
+  to {
+    filter:
+      drop-shadow(0 0 9px rgba(255,80,200,.65));
+  }
+}
+
+
+/* ========================================
+   DANCING MICROPHONE
+======================================== */
+
+.dancing-mic {
+  display: inline-block;
+
+  font-size: 0.95em;
+  line-height: 1;
+
+  transform-origin: 50% 85%;
+
+  animation:
+    micDance 2.2s ease-in-out infinite;
+
+  filter:
+    drop-shadow(0 0 5px rgba(192,132,252,.7));
+}
+
+
+@keyframes micDance {
+
+  0% {
+    transform:
+      translateY(0)
+      rotate(-12deg)
+      scale(1);
+  }
+
+  25% {
+    transform:
+      translateY(-4px)
+      rotate(8deg)
+      scale(1.06);
+  }
+
+  50% {
+    transform:
+      translateY(0)
+      rotate(14deg)
+      scale(1);
+  }
+
+  75% {
+    transform:
+      translateY(-3px)
+      rotate(-6deg)
+      scale(1.05);
+  }
+
+  100% {
+    transform:
+      translateY(0)
+      rotate(-12deg)
+      scale(1);
+  }
+}
+
+
+/* ========================================
+   BEAUTIFUL TOP MARQUEE
+======================================== */
+
+.tv-marquee {
+  position: relative;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(124,58,237,.10),
+      rgba(236,72,153,.10),
+      transparent
+    );
+}
+
+
+/* soft light travelling behind text */
+.tv-marquee::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 20%,
+      rgba(255,255,255,.13) 50%,
+      transparent 80%
+    );
+
+  transform: translateX(-100%);
+
+  animation:
+    marqueeLight 5s ease-in-out infinite;
+}
+
+
+@keyframes marqueeLight {
+
+  0% {
+    transform: translateX(-100%);
+  }
+
+  55%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+
+/* moving name */
+.tv-marquee .marquee-text {
+
+  background: linear-gradient(
+    90deg,
+    #ff7ac8,
+    #ffd86f,
+    #7cf7ff,
+    #b998ff,
+    #ff7ac8
+  );
+
+  background-size: 250% 100%;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+
+  text-shadow:
+    0 0 14px rgba(167,139,250,.25);
+
+  animation:
+    tvMarquee 15s linear infinite,
+    marqueeRainbow 4s linear infinite;
+}
+
+
+@keyframes marqueeRainbow {
+
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 250% 50%;
+  }
+}
+
+
+/* ========================================
+   Accessibility
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .rainbow-title,
+  .dancing-mic,
+  .tv-marquee::after {
+    animation: none;
+  }
+
+}
