@@ -1312,10 +1312,23 @@ if (type === "TOGGLE_MUTE") {
       <header className="tv-header">
         <div className="tv-title">
           <div className="tv-marquee">
-            <span>💚 Khin Thuzar Hlaing 💚</span>
-          </div>
+  <span className="marquee-text">
+    ✨ 💚 Khin Thuzar Hlaing 💚 ✨
+  </span>
+</div>
 
-          <h1>HOME KARAOKE 🎤</h1>
+<h1 className="karaoke-title">
+  <span className="rainbow-title">
+    HOME KARAOKE
+  </span>
+
+  <span
+    className="dancing-mic"
+    aria-hidden="true"
+  >
+    🎤
+  </span>
+</h1>
         </div>
 
         <div className="tv-header-actions">
