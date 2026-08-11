@@ -293,29 +293,7 @@ export default function App() {
   const playerUnlockedRef = useRef(true);
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
-  useEffect(() => {
-  const handleInternetBack = () => {
-    // Internet မရှိတုန်း YouTube Player မတက်ခဲ့ရင်
-    // Internet ပြန်ရတာနဲ့ page ကိုတစ်ကြိမ် refresh
-    if (!playerReadyRef.current) {
-      window.location.reload();
-    }
-  };
-
-  window.addEventListener(
-    "online",
-    handleInternetBack
-  );
-
-  return () => {
-    window.removeEventListener(
-      "online",
-      handleInternetBack
-    );
-  };
-}, []);
-
-  const [song, setSong] = useState(null);
+   const [song, setSong] = useState(null);
   const [showQrPopup, setShowQrPopup] = useState(false);
   const [nextSong, setNextSong] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
@@ -525,6 +503,42 @@ setStatus("Remote connected");
       { onConflict: "room_id" }
     );
   }, [normalizeQueuePositions]);
+  useEffect(() => {
+  const handleInternetBack = async () => {
+    try {
+      // Internet ပြတ်နေချိန် Remote မှာ ပြောင်းခဲ့တဲ့
+      // လက်ရှိသီချင်းနဲ့ Queue ကို ပြန်ယူ
+      await loadPlaybackState();
+      await loadQueueFromDatabase();
+
+      // YouTube Player ကို Internet မရှိတုန်း
+      // မတက်နိုင်ခဲ့ရင်တော့ page ကို reload
+      if (!playerReadyRef.current) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error(
+        "Internet reconnect sync error:",
+        error
+      );
+    }
+  };
+
+  window.addEventListener(
+    "online",
+    handleInternetBack
+  );
+
+  return () => {
+    window.removeEventListener(
+      "online",
+      handleInternetBack
+    );
+  };
+}, [
+  loadPlaybackState,
+  loadQueueFromDatabase
+]);
   useEffect(() => {
   const handleAndroidReady = () => {
     setStatus("Android USB ready");
