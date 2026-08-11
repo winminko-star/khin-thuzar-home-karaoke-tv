@@ -504,24 +504,37 @@ setStatus("Remote connected");
     );
   }, [normalizeQueuePositions]);
   useEffect(() => {
-  const handleInternetBack = async () => {
+  let retryTimer1 = null;
+  let retryTimer2 = null;
+
+  const syncAfterReconnect = async () => {
     try {
-      // Internet ပြတ်နေချိန် Remote မှာ ပြောင်းခဲ့တဲ့
-      // လက်ရှိသီချင်းနဲ့ Queue ကို ပြန်ယူ
       await loadPlaybackState();
       await loadQueueFromDatabase();
-
-      // YouTube Player ကို Internet မရှိတုန်း
-      // မတက်နိုင်ခဲ့ရင်တော့ page ကို reload
-      if (!playerReadyRef.current) {
-        window.location.reload();
-      }
     } catch (error) {
       console.error(
-        "Internet reconnect sync error:",
+        "Reconnect sync error:",
         error
       );
     }
+  };
+
+  const handleInternetBack = () => {
+    // Internet ON ဖြစ်တာနဲ့ ချက်ချင်းမဖတ်ဘဲ
+    // Supabase connection ပြန်တက်ဖို့ နည်းနည်းစောင့်
+    retryTimer1 = window.setTimeout(() => {
+      syncAfterReconnect();
+
+      if (!playerReadyRef.current) {
+        window.location.reload();
+      }
+    }, 1500);
+
+    // ပထမတစ်ကြိမ် Supabase မပြန်သေးရင်
+    // ထပ်တစ်ကြိမ် sync
+    retryTimer2 = window.setTimeout(() => {
+      syncAfterReconnect();
+    }, 5000);
   };
 
   window.addEventListener(
@@ -534,6 +547,14 @@ setStatus("Remote connected");
       "online",
       handleInternetBack
     );
+
+    if (retryTimer1) {
+      window.clearTimeout(retryTimer1);
+    }
+
+    if (retryTimer2) {
+      window.clearTimeout(retryTimer2);
+    }
   };
 }, [
   loadPlaybackState,
