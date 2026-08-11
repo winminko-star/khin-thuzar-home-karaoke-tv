@@ -293,6 +293,27 @@ export default function App() {
   const playerUnlockedRef = useRef(true);
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
+  useEffect(() => {
+  const handleInternetBack = () => {
+    // Internet မရှိတုန်း YouTube Player မတက်ခဲ့ရင်
+    // Internet ပြန်ရတာနဲ့ page ကိုတစ်ကြိမ် refresh
+    if (!playerReadyRef.current) {
+      window.location.reload();
+    }
+  };
+
+  window.addEventListener(
+    "online",
+    handleInternetBack
+  );
+
+  return () => {
+    window.removeEventListener(
+      "online",
+      handleInternetBack
+    );
+  };
+}, []);
 
   const [song, setSong] = useState(null);
   const [showQrPopup, setShowQrPopup] = useState(false);
