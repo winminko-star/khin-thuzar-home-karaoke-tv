@@ -521,17 +521,26 @@ setStatus("Remote connected");
 
   const handleInternetBack = () => {
     retryTimer1 = window.setTimeout(() => {
-  syncAfterReconnect();
+      // YouTube Player လုံးဝ မတက်သေးရင်
+      // Page ကိုတစ်ခါ Reload လုပ်ပြီး
+      // YouTube API ကိုအစကနေ ပြန်တင်
+      if (!playerReadyRef.current) {
+        window.location.reload();
+        return;
+      }
 
-  // App ကို Internet မရှိတုန်းဖွင့်ခဲ့ပြီး
-  // YouTube Player လုံးဝမတက်ခဲ့မှသာ reload
-  if (!playerReadyRef.current) {
-    window.location.reload();
-  }
-}, 1500);
+      // Player တက်ပြီးသားဆို
+      // Page မ Reload ဘဲ
+      // Remote / TV state ပဲ ပြန်ညှိ
+      syncAfterReconnect();
+    }, 1500);
 
     retryTimer2 = window.setTimeout(() => {
-      syncAfterReconnect();
+      // Player Ready ဖြစ်ပြီးသားဆို
+      // 5 sec မှာ နောက်တစ်ကြိမ် Sync စစ်
+      if (playerReadyRef.current) {
+        syncAfterReconnect();
+      }
     }, 5000);
   };
 
