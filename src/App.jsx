@@ -290,7 +290,7 @@ export default function App() {
   const stateChannel = useRef(null);
   const queueReloadTimer = useRef(null);
   const stateReloadTimer = useRef(null);
-  const playerUnlockedRef = useRef(false);
+  const playerUnlockedRef = useRef(true);
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
 
@@ -298,7 +298,7 @@ export default function App() {
   const [showQrPopup, setShowQrPopup] = useState(false);
   const [nextSong, setNextSong] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
-  const [playerUnlocked, setPlayerUnlocked] = useState(false);
+  const [playerUnlocked, setPlayerUnlocked] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showTextBanner, setShowTextBanner] =
   useState(false);
@@ -417,19 +417,11 @@ if (
   return;
 }
 
-if (playerUnlockedRef.current) {
-  player.current.loadVideoById(
-    selectedVideo.id
-  );
-  setStatus("Remote connected");
-} else {
-  player.current.cueVideoById(
-    selectedVideo.id
-  );
-  setStatus(
-    "TV မှာ Start Karaoke နှိပ်ပါ"
-  );
-}
+player.current.loadVideoById(
+  selectedVideo.id
+);
+
+setStatus("Remote connected");
   }, []);
 
   const normalizeQueuePositions = useCallback(async () => {
@@ -649,15 +641,17 @@ iv_load_policy: 3,
   normalizeVideo(
     pendingVideoRef.current
   );
-
-if (
+    if (
   pendingVideo &&
   pendingVideo.sourceType === "youtube"
 ) {
-  event.target.cueVideoById(
+  playerUnlockedRef.current = true;
+  setPlayerUnlocked(true);
+
+  event.target.loadVideoById(
     pendingVideo.id
   );
-}
+    }
   },
             onStateChange: (event) => {
               if (event.data !== window.YT.PlayerState.ENDED) return;
@@ -865,21 +859,14 @@ const realtimeQueueChannel = supabase
   getAndroidUsbBridge()
     ?.stopUsbVideo?.();
 
-  if (playerUnlockedRef.current) {
-    player.current.loadVideoById(
-      selectedVideo.id
-    );
+  playerUnlockedRef.current = true;
+setPlayerUnlocked(true);
 
-    setStatus("Remote connected");
-  } else {
-    player.current.cueVideoById(
-      selectedVideo.id
-    );
+player.current.loadVideoById(
+  selectedVideo.id
+);
 
-    setStatus(
-      "TV မှာ Start Karaoke နှိပ်ပါ"
-    );
-  }
+setStatus("Remote connected");
 
   return;
           }
@@ -1044,16 +1031,12 @@ if (type === "STOP_SCENERY_SHOW") {
     return;
   }
 
-  if (!playerUnlockedRef.current) {
-    setStatus(
-      "TV မှာ Start Karaoke နှိပ်ပါ"
-    );
-    return;
-  }
+  playerUnlockedRef.current = true;
+  setPlayerUnlocked(true);
 
   player.current?.playVideo();
   return;
-          }
+        }
 
           if (type === "PAUSE") {
   if (getSourceType(pendingVideoRef.current) === "usb") {
@@ -1245,67 +1228,7 @@ if (type === "TOGGLE_MUTE") {
   }, 15000);
   }
 
-  function startKaraoke() {
-  playerUnlockedRef.current = true;
-  setPlayerUnlocked(true);
-
-  setStatus(
-    configured
-      ? "Remote connected"
-      : "Ready"
-  );
-
-  const selectedVideo = normalizeVideo(
-    song || pendingVideoRef.current
-  );
-
-  if (!selectedVideo) {
-    return;
-  }
-
-  if (selectedVideo.sourceType === "usb") {
-    const bridge = getAndroidUsbBridge();
-
-    if (!bridge?.playUsbVideo) {
-      setStatus(
-        "Android USB Player မချိတ်ရသေးပါ။"
-      );
-      return;
-    }
-
-    player.current?.stopVideo?.();
-
-    bridge.playUsbVideo(
-      getUsbFileId(selectedVideo)
-    );
-
-    setStatus("USB သီချင်းဖွင့်နေသည်");
-    return;
-  }
-
-  if (
-    !playerReadyRef.current ||
-    !player.current
-  ) {
-    setStatus(
-      "YouTube Player ပြင်ဆင်နေသည်…"
-    );
-    return;
-  }
-
-  getAndroidUsbBridge()
-    ?.stopUsbVideo?.();
-
-  player.current.loadVideoById(
-    selectedVideo.id
-  );
-
-  setStatus(
-    configured
-      ? "Remote connected"
-      : "Ready"
-  );
-  }
+  
 
   return (
     <main className={`tv-shell ${showTextBanner ? "has-announcement" : ""}`}>
@@ -1362,45 +1285,23 @@ if (type === "TOGGLE_MUTE") {
 <section className="screen">
         <div ref={playerHost} className="player" />
 
-        {(!song || !playerUnlocked) && (
-          <div className="standby">
-            <div>
-  <img
-    src="/tv_banner.png"
-    alt="Khin Thuzar Home Karaoke TV"
-    className="standby-banner"
-  />
-</div>
+{!song && (
+  <div className="standby">
+    <div>
+      <img
+        src="/tv_banner.png"
+        alt="Khin Thuzar Home Karaoke TV"
+        className="standby-banner"
+      />
+    </div>
 
-            <h2>{!playerUnlocked ? "Start Karaoke" : "Ready to Sing"}</h2>
-
-            <p>
-              {!playerReady
-                ? "YouTube Player ပြင်ဆင်နေသည်…"
-                : !playerUnlocked
-                  ? song
-                    ? "သီချင်းအဆင်သင့်ဖြစ်ပါပြီ။ Start ကိုနှိပ်ပါ"
-                    : "ပထမဆုံးတစ်ကြိမ် Start ကိုနှိပ်ပါ"
-                  : "Remote App ကနေ သီချင်းရွေးပါ"}
-            </p>
-
-            {!playerUnlocked && (
-              <button
-  type="button"
-  className="start-karaoke-button"
-  onClick={startKaraoke}
-  disabled={
-    !playerReady &&
-    getSourceType(
-      song || pendingVideoRef.current
-    ) !== "usb"
-  }
->
-  ▶ Start Karaoke
-</button>
-            )}
-          </div>
-        )}
+    <p>
+      {!playerReady
+        ? "YouTube Player ပြင်ဆင်နေသည်…"
+        : "Remote App ကနေ သီချင်းရွေးပါ"}
+    </p>
+  </div>
+)}
       </section>
 
       <footer>
