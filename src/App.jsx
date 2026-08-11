@@ -190,7 +190,7 @@ function loadYouTubeApi() {
       script = document.createElement("script");
       script.src = YOUTUBE_IFRAME_API;
       script.async = true;
-      script.onerror = () => reject(new Error("YouTube Player API load မရပါ။"));
+      script.onerror = () => reject(new Error(" Player API load မရပါ။"));
       document.head.appendChild(script);
     }
   });
@@ -673,7 +673,7 @@ iv_load_policy: 3,
       })
       .catch((error) => {
         console.error(error);
-        setStatus(error.message || "YouTube Player API load မရပါ။");
+        setStatus(error.message || " Player API load မရပါ။");
       });
 
     return () => {
@@ -1297,7 +1297,7 @@ if (type === "TOGGLE_MUTE") {
 
     <p>
       {!playerReady
-        ? "YouTube Player ပြင်ဆင်နေသည်…"
+        ? "ကျေးဇူးပြု၍ Wifi ချိတ်ဆက်ပါ။"
         : "Remote App ကနေ သီချင်းရွေးပါ"}
     </p>
   </div>
