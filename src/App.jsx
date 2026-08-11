@@ -521,8 +521,14 @@ setStatus("Remote connected");
 
   const handleInternetBack = () => {
     retryTimer1 = window.setTimeout(() => {
-      syncAfterReconnect();
-    }, 1500);
+  syncAfterReconnect();
+
+  // App ကို Internet မရှိတုန်းဖွင့်ခဲ့ပြီး
+  // YouTube Player လုံးဝမတက်ခဲ့မှသာ reload
+  if (!playerReadyRef.current) {
+    window.location.reload();
+  }
+}, 1500);
 
     retryTimer2 = window.setTimeout(() => {
       syncAfterReconnect();
