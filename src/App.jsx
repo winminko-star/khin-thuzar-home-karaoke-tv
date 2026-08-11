@@ -520,18 +520,10 @@ setStatus("Remote connected");
   };
 
   const handleInternetBack = () => {
-    // Internet ON ဖြစ်တာနဲ့ ချက်ချင်းမဖတ်ဘဲ
-    // Supabase connection ပြန်တက်ဖို့ နည်းနည်းစောင့်
     retryTimer1 = window.setTimeout(() => {
       syncAfterReconnect();
-
-      if (!playerReadyRef.current) {
-        window.location.reload();
-      }
     }, 1500);
 
-    // ပထမတစ်ကြိမ် Supabase မပြန်သေးရင်
-    // ထပ်တစ်ကြိမ် sync
     retryTimer2 = window.setTimeout(() => {
       syncAfterReconnect();
     }, 5000);
