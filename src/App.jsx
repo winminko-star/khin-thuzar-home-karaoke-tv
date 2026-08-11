@@ -1297,7 +1297,7 @@ if (type === "TOGGLE_MUTE") {
 
     <p>
       {!playerReady
-        ? "ကျေးဇူးပြု၍ Wifi ချိတ်ဆက်ပါ။"
+        ? "ကျေးဇူးပြု၍ Wifi ချိတ်ဆက်ပြီး Applicationကိုပြန်ဖွင့်ပါ။"
         : "Remote App ကနေ သီချင်းရွေးပါ"}
     </p>
   </div>
