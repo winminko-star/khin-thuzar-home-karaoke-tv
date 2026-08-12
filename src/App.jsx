@@ -282,7 +282,7 @@ function parseUsbSongs(value) {
   }
 }
 
-const USB_CHUNK_SIZE = 10;
+const USB_CHUNK_SIZE = 50;
 const USB_SEND_BATCH_SIZE = 1;
 
 async function sendUsbSongsInChunks(targetChannel, songs) {
