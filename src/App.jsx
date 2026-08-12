@@ -250,7 +250,7 @@ function parseUsbSongs(value) {
 
       const searchText = [
         title,
-        song.name,
+                song.name,
         song.fileName,
         song.folder,
         song.path,
@@ -280,6 +280,70 @@ function parseUsbSongs(value) {
 
     return [];
   }
+}
+
+const USB_CHUNK_SIZE = 150;
+const USB_SEND_BATCH_SIZE = 4;
+
+async function sendUsbSongsInChunks(targetChannel, songs) {
+  if (!targetChannel?.send) {
+    throw new Error("TV realtime channel မချိတ်ရသေးပါ။");
+  }
+
+  const safeSongs = Array.isArray(songs) ? songs : [];
+  const transferId =
+    `usb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const totalChunks = Math.max(
+    1,
+    Math.ceil(safeSongs.length / USB_CHUNK_SIZE)
+  );
+
+  const packets = Array.from(
+    { length: totalChunks },
+    (_, chunkIndex) => {
+      const start = chunkIndex * USB_CHUNK_SIZE;
+      const end = start + USB_CHUNK_SIZE;
+
+      return {
+        chunkIndex,
+        payload: {
+          type: "USB_SONGS_CHUNK",
+          transferId,
+          chunkIndex,
+          totalChunks,
+          songs: safeSongs.slice(start, end)
+        }
+      };
+    }
+  );
+
+  for (
+    let index = 0;
+    index < packets.length;
+    index += USB_SEND_BATCH_SIZE
+  ) {
+    const batch = packets.slice(
+      index,
+      index + USB_SEND_BATCH_SIZE
+    );
+
+    await Promise.all(
+      batch.map(({ payload }) =>
+        targetChannel.send({
+          type: "broadcast",
+          event: "tv-status",
+          payload
+        })
+      )
+    );
+  }
+
+  return {
+    transferId,
+    totalChunks,
+    totalSongs: safeSongs.length
+  };
 }
 
 export default function App() {
@@ -438,7 +502,7 @@ setStatus("Remote connected");
         supabase.from("karaoke_queue").update({ position: index }).eq("id", row.id)
       )
     );
-  }, []);
+      }, []);
 
   const advancePlaybackFromDatabase = useCallback(async () => {
     if (!configured || !supabase) return;
@@ -572,7 +636,7 @@ setStatus("Remote connected");
     setStatus("Android USB ready");
   };
 
-  const handleUsbSongsUpdated = () => {
+  const handleUsbSongsUpdated = async () => {
     const bridge = getAndroidUsbBridge();
 
     if (!bridge?.getUsbSongs) return;
@@ -582,19 +646,34 @@ setStatus("Remote connected");
         bridge.getUsbSongs()
       );
 
-      channel.current?.send({
-        type: "broadcast",
-        event: "tv-status",
-        payload: {
-          type: "USB_SONGS_LIST",
-          songs
-        }
-      });
+      if (!channel.current) {
+        return;
+      }
+
+      await sendUsbSongsInChunks(
+        channel.current,
+        songs
+      );
+
+      setStatus(
+        `USB စာရင်း ${songs.length} ပုဒ် Remote သို့ ပို့ပြီးပါပြီ`
+      );
     } catch (error) {
       console.error(
         "USB songs update error:",
         error
       );
+
+      channel.current?.send({
+        type: "broadcast",
+        event: "tv-status",
+        payload: {
+          type: "USB_ERROR",
+          message:
+            error?.message ||
+            "USB သီချင်းစာရင်း ပို့မရပါ။"
+        }
+      });
     }
   };
 
@@ -675,7 +754,7 @@ setStatus("Remote connected");
             cc_load_policy: 0,
 cc_lang_pref: "",
 iv_load_policy: 3,
-            playsinline: 1,
+                        playsinline: 1,
             enablejsapi: 1,
             suggestedQuality: "large", // 480p စမ်းရန်
             origin: window.location.origin,
@@ -854,7 +933,7 @@ const realtimeQueueChannel = supabase
       .on(
         "broadcast",
         { event: "karaoke-command" },
-        ({ payload }) => {
+        async ({ payload }) => {
           const { type, payload: data = {} } = payload || {};
 
           if (type === "LOAD_AND_PLAY") {
@@ -927,7 +1006,7 @@ setPlayerUnlocked(true);
 
 player.current.loadVideoById(
   selectedVideo.id
-);
+  );
 
 setStatus("Remote connected");
 
@@ -957,14 +1036,14 @@ setStatus("Remote connected");
     const songs =
       parseUsbSongs(rawSongs);
 
-    realtimeChannel.send({
-      type: "broadcast",
-      event: "tv-status",
-      payload: {
-        type: "USB_SONGS_LIST",
-        songs
-      }
-    });
+    await sendUsbSongsInChunks(
+      realtimeChannel,
+      songs
+    );
+
+    setStatus(
+      `USB စာရင်း ${songs.length} ပုဒ် Remote သို့ ပို့ပြီးပါပြီ`
+    );
   } catch (error) {
     realtimeChannel.send({
       type: "broadcast",
@@ -1179,7 +1258,7 @@ if (type === "VOLUME_DOWN") {
 
   const nextVolume = clampVolume(
     currentVolume - 10
-  );
+          );
 
   player.current?.setVolume?.(nextVolume);
 
