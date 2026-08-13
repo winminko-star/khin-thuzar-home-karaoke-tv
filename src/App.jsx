@@ -1012,6 +1012,46 @@ setStatus("Remote connected");
 
   return;
           }
+          if (type === "REQUEST_TV_STATE") {
+  try {
+    // TV မှာ လက်ရှိတကယ်ကိုင်ထားတဲ့ Now Playing
+    const tvNowPlaying =
+  normalizeVideo(pendingVideoRef.current) || null;
+
+    // TV / Supabase ရဲ့ လက်ရှိ Queue ကိုဖတ်မယ်
+    const { data: queueRows, error: queueError } =
+      await supabase
+        .from("karaoke_queue")
+        .select("*")
+        .eq("room_id", ROOM_ID)
+        .order("position", { ascending: true })
+        .order("id", { ascending: true });
+
+    if (queueError) {
+      throw queueError;
+    }
+
+    const tvQueue = (queueRows || []).map(queueRowToSong);
+
+    await realtimeChannel.send({
+      type: "broadcast",
+      event: "tv-status",
+      payload: {
+        type: "TV_STATE",
+        currentSong: tvNowPlaying,
+        queue: tvQueue
+      }
+    });
+
+    setStatus("Remote Adjust ပြီးပါပြီ");
+  } catch (error) {
+    console.error("TV state send error:", error);
+
+    setStatus("Remote Adjust မအောင်မြင်ပါ");
+  }
+
+  return;
+          }
           if (type === "REQUEST_USB_SONGS") {
   const bridge = getAndroidUsbBridge();
 
