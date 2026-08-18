@@ -356,8 +356,24 @@ const bannerImages = [
 
 
 export default function App() {
-  const playerHost = useRef(null);
+    const playerHostA = useRef(null);
+  const playerHostB = useRef(null);
+
+  // လက်ရှိ TV မှာတကယ်အသုံးပြုနေတဲ့ YouTube Player
   const player = useRef(null);
+
+  // YouTube Player A / B
+  const playerA = useRef(null);
+  const playerB = useRef(null);
+
+  const playerAReadyRef = useRef(false);
+  const playerBReadyRef = useRef(false);
+
+  // ဘယ် Player ကို Screen ပေါ်ပြနေလဲ
+  const activePlayerSlotRef = useRef("A");
+
+  // နောက် YouTube သီချင်းကို ဘယ် ID အထိ cue လုပ်ထားလဲ
+  const preloadedVideoIdRef = useRef("");
   const channel = useRef(null);
   const queueChannel = useRef(null);
   const stateChannel = useRef(null);
@@ -370,6 +386,8 @@ export default function App() {
   const [showQrPopup, setShowQrPopup] = useState(false);
   const [nextSong, setNextSong] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
+    const [activePlayerSlot, setActivePlayerSlot] = useState("A");
+  const [youtubePlayersReadyVersion, setYoutubePlayersReadyVersion] = useState(0);
   const [playerUnlocked, setPlayerUnlocked] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showTextBanner, setShowTextBanner] =
@@ -400,6 +418,203 @@ const sceneryImages = [
   const [status, setStatus] = useState(
     configured ? "Connecting…" : "Supabase not configured"
   );
+    const getPlayerForSlot = useCallback((slot) => {
+    return slot === "A"
+      ? playerA.current
+      : playerB.current;
+  }, []);
+
+  const getPlayerReadyForSlot = useCallback((slot) => {
+    return slot === "A"
+      ? playerAReadyRef.current
+      : playerBReadyRef.current;
+  }, []);
+
+  const playYouTubeVideo = useCallback(
+    (video) => {
+      const selectedVideo = normalizeVideo(video);
+
+      if (
+        !selectedVideo ||
+        selectedVideo.sourceType !== "youtube"
+      ) {
+        return false;
+      }
+
+      const activeSlot =
+        activePlayerSlotRef.current;
+
+      const inactiveSlot =
+        activeSlot === "A" ? "B" : "A";
+
+      const activePlayer =
+        getPlayerForSlot(activeSlot);
+
+      const inactivePlayer =
+        getPlayerForSlot(inactiveSlot);
+
+      const inactiveReady =
+        getPlayerReadyForSlot(inactiveSlot);
+
+      // USB ဖွင့်နေခဲ့ရင် ရပ်မယ်
+      getAndroidUsbBridge()
+        ?.stopUsbVideo?.();
+
+      playerUnlockedRef.current = true;
+      setPlayerUnlocked(true);
+
+      // နောက်သီချင်းကို inactive Player မှာ
+      // cue လုပ်ထားပြီးသားဆို Player ကိုပြောင်းသုံးမယ်
+      if (
+        preloadedVideoIdRef.current ===
+          selectedVideo.id &&
+        inactiveReady &&
+        inactivePlayer
+      ) {
+        const oldVolume =
+          activePlayer?.getVolume?.() ?? 100;
+
+        const oldMuted =
+          activePlayer?.isMuted?.() ?? false;
+
+        activePlayer?.stopVideo?.();
+
+        inactivePlayer.setVolume?.(
+          oldVolume
+        );
+
+        if (oldMuted) {
+          inactivePlayer.mute?.();
+        } else {
+          inactivePlayer.unMute?.();
+        }
+
+        activePlayerSlotRef.current =
+          inactiveSlot;
+
+        player.current =
+          inactivePlayer;
+
+        playerReadyRef.current = true;
+
+        setActivePlayerSlot(
+          inactiveSlot
+        );
+
+        setPlayerReady(true);
+
+        preloadedVideoIdRef.current = "";
+
+        // cue လုပ်ထားပြီးသား video ကိုစမယ်
+        inactivePlayer.playVideo?.();
+
+        return true;
+      }
+
+      // Preload မရှိတဲ့ YouTube သီချင်းဆို
+      // လက်ရှိ active Player မှာပုံမှန်ဖွင့်မယ်
+      if (
+        !getPlayerReadyForSlot(activeSlot) ||
+        !activePlayer
+      ) {
+        return false;
+      }
+
+      player.current = activePlayer;
+      playerReadyRef.current = true;
+
+      activePlayer.loadVideoById(
+        selectedVideo.id
+      );
+
+      return true;
+    },
+    [
+      getPlayerForSlot,
+      getPlayerReadyForSlot
+    ]
+  );
+
+  const preloadNextYouTube =
+    useCallback(
+      (video) => {
+        const nextVideo =
+          normalizeVideo(video);
+
+        const activeSlot =
+          activePlayerSlotRef.current;
+
+        const inactiveSlot =
+          activeSlot === "A"
+            ? "B"
+            : "A";
+
+        const inactivePlayer =
+          getPlayerForSlot(
+            inactiveSlot
+          );
+
+        // USB / Queue empty /
+        // current song ကို preload မလုပ်
+        if (
+          !nextVideo ||
+          nextVideo.sourceType !==
+            "youtube" ||
+          nextVideo.id ===
+            pendingVideoRef.current?.id
+        ) {
+          if (
+            preloadedVideoIdRef.current
+          ) {
+            inactivePlayer
+              ?.stopVideo?.();
+
+            preloadedVideoIdRef.current =
+              "";
+          }
+
+          return;
+        }
+
+        if (
+          !getPlayerReadyForSlot(
+            inactiveSlot
+          ) ||
+          !inactivePlayer
+        ) {
+          return;
+        }
+
+        if (
+          preloadedVideoIdRef.current ===
+          nextVideo.id
+        ) {
+          return;
+        }
+
+        // အသံမထွက်ဘဲ နောက် YouTube ကို
+        // အဆင်သင့် cue လုပ်ထားမယ်
+        inactivePlayer.cueVideoById(
+          nextVideo.id
+        );
+
+        preloadedVideoIdRef.current =
+          nextVideo.id;
+      },
+      [
+        getPlayerForSlot,
+        getPlayerReadyForSlot
+      ]
+    );
+
+  useEffect(() => {
+    preloadNextYouTube(nextSong);
+  }, [
+    nextSong,
+    activePlayerSlot,
+    youtubePlayersReadyVersion,
+    preloadNextYouTube
+  ]);
 
   const loadQueueFromDatabase = useCallback(async () => {
     if (!configured || !supabase) return;
@@ -486,19 +701,15 @@ if (selectedVideo.sourceType === "usb") {
   return;
 }
 
-if (
-  !playerReadyRef.current ||
-  !player.current
-) {
+if (!playYouTubeVideo(selectedVideo)) {
+  setStatus(
+    "YouTube player loading…"
+  );
   return;
 }
 
-player.current.loadVideoById(
-  selectedVideo.id
-);
-
 setStatus("Remote connected");
-  }, []);
+    }, [playYouTubeVideo]);
 
   const normalizeQueuePositions = useCallback(async () => {
     const { data } = await supabase
