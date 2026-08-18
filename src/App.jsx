@@ -345,6 +345,15 @@ async function sendUsbSongsInChunks(targetChannel, songs) {
     totalSongs: safeSongs.length
   };
 }
+const bannerImages = [
+  "/tv_banner1.png",
+  "/tv_banner2.png",
+  "/tv_banner3.png",
+  "/tv_banner4.png",
+  "/tv_banner5.png",
+];
+
+export default function App() {
 
 export default function App() {
   const playerHost = useRef(null);
@@ -370,6 +379,10 @@ const [textBannerMessage, setTextBannerMessage] =
   useState("");
   const [sceneryShow, setSceneryShow] = useState(false);
 const [sceneryIndex, setSceneryIndex] = useState(0);
+  const [standbyBanner] = useState(() => {
+  const randomIndex = Math.floor(Math.random() * bannerImages.length);
+  return bannerImages[randomIndex];
+});
 
 const sceneryImages = [
   "/Main.png",
@@ -1471,7 +1484,7 @@ if (type === "TOGGLE_MUTE") {
   <div className="standby">
     <div>
       <img
-        src="/tv_banner.png"
+        src={standbyBanner}
         alt="Khin Thuzar Home Karaoke TV"
         className="standby-banner"
       />
