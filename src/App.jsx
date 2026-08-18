@@ -961,97 +961,199 @@ setStatus("Remote connected");
   };
 }, [sceneryShow]);
 
-  useEffect(() => {
+    useEffect(() => {
     let cancelled = false;
 
     loadYouTubeApi()
       .then(() => {
-        if (cancelled || !playerHost.current || player.current) return;
+        if (
+          cancelled ||
+          !playerHostA.current ||
+          !playerHostB.current
+        ) {
+          return;
+        }
 
-        player.current = new window.YT.Player(playerHost.current, {
-          width: "100%",
-          height: "100%",
-          playerVars: {
-            autoplay: 0,
-            controls: 1,
-            rel: 0,
-            cc_load_policy: 0,
-cc_lang_pref: "",
-iv_load_policy: 3,
-                        playsinline: 1,
-            enablejsapi: 1,
-            suggestedQuality: "large", // 480p စမ်းရန်
-            origin: window.location.origin,
-          },
-          events: {
-  onReady: (event) => {
-    if (cancelled) return;
+        const createPlayer = (slot, host) => {
+          return new window.YT.Player(host, {
+            width: "100%",
+            height: "100%",
 
-    playerReadyRef.current = true;
-    setPlayerReady(true);
-    setStatus(
-      configured
-        ? "Remote ready"
-        : "Supabase not configured"
-    );
-
-    // Caption module ကို ပိတ်ရန် ကြိုးစားမယ်
-    try {
-      event.target.unloadModule?.("captions");
-      event.target.unloadModule?.("cc");
-    } catch (error) {
-      console.warn("Caption ပိတ်မရပါ:", error);
-    }
-
-    const pendingVideo =
-  normalizeVideo(
-    pendingVideoRef.current
-  );
-    if (
-  pendingVideo &&
-  pendingVideo.sourceType === "youtube"
-) {
-  playerUnlockedRef.current = true;
-  setPlayerUnlocked(true);
-
-  event.target.loadVideoById(
-    pendingVideo.id
-  );
-    }
-  },
-            onStateChange: (event) => {
-              if (event.data !== window.YT.PlayerState.ENDED) return;
-
-              advancePlaybackFromDatabase().finally(() => {
-                channel.current?.send({
-                  type: "broadcast",
-                  event: "tv-status",
-                  payload: { type: "VIDEO_ENDED" },
-                });
-              });
+            playerVars: {
+              autoplay: 0,
+              controls: 1,
+              rel: 0,
+              cc_load_policy: 0,
+              cc_lang_pref: "",
+              iv_load_policy: 3,
+              playsinline: 1,
+              enablejsapi: 1,
+              origin: window.location.origin,
             },
-            onError: (event) => {
-              console.error("YouTube Player Error:", event.data);
-              setStatus(getYouTubeErrorMessage(event.data));
+
+            events: {
+              onReady: (event) => {
+                if (cancelled) return;
+
+                if (slot === "A") {
+                  playerA.current = event.target;
+                  playerAReadyRef.current = true;
+                } else {
+                  playerB.current = event.target;
+                  playerBReadyRef.current = true;
+                }
+
+                setYoutubePlayersReadyVersion(
+                  (value) => value + 1
+                );
+
+                try {
+                  event.target.unloadModule?.("captions");
+                  event.target.unloadModule?.("cc");
+                } catch (error) {
+                  console.warn(
+                    "Caption ပိတ်မရပါ:",
+                    error
+                  );
+                }
+
+                if (
+                  slot !==
+                  activePlayerSlotRef.current
+                ) {
+                  return;
+                }
+
+                player.current = event.target;
+                playerReadyRef.current = true;
+
+                setPlayerReady(true);
+
+                setStatus(
+                  configured
+                    ? "Remote ready"
+                    : "Supabase not configured"
+                );
+
+                const pendingVideo =
+                  normalizeVideo(
+                    pendingVideoRef.current
+                  );
+
+                if (
+                  pendingVideo &&
+                  pendingVideo.sourceType ===
+                    "youtube"
+                ) {
+                  playerUnlockedRef.current = true;
+                  setPlayerUnlocked(true);
+
+                  event.target.loadVideoById(
+                    pendingVideo.id
+                  );
+                }
+              },
+
+              onStateChange: (event) => {
+                if (
+                  slot !==
+                  activePlayerSlotRef.current
+                ) {
+                  return;
+                }
+
+                if (
+                  event.data !==
+                  window.YT.PlayerState.ENDED
+                ) {
+                  return;
+                }
+
+                advancePlaybackFromDatabase()
+                  .finally(() => {
+                    channel.current?.send({
+                      type: "broadcast",
+                      event: "tv-status",
+                      payload: {
+                        type: "VIDEO_ENDED"
+                      },
+                    });
+                  });
+              },
+
+              onError: (event) => {
+                if (
+                  slot !==
+                  activePlayerSlotRef.current
+                ) {
+                  console.warn(
+                    "YouTube preload error:",
+                    event.data
+                  );
+
+                  preloadedVideoIdRef.current = "";
+                  return;
+                }
+
+                console.error(
+                  "YouTube Player Error:",
+                  event.data
+                );
+
+                setStatus(
+                  getYouTubeErrorMessage(
+                    event.data
+                  )
+                );
+              },
             },
-          },
-        });
+          });
+        };
+
+        if (!playerA.current) {
+          playerA.current =
+            createPlayer(
+              "A",
+              playerHostA.current
+            );
+        }
+
+        if (!playerB.current) {
+          playerB.current =
+            createPlayer(
+              "B",
+              playerHostB.current
+            );
+        }
       })
       .catch((error) => {
         console.error(error);
-        setStatus(error.message || " Player API load မရပါ။");
+
+        setStatus(
+          error.message ||
+            "Player API load မရပါ။"
+        );
       });
 
     return () => {
-  cancelled = true;
-  playerReadyRef.current = false;
+      cancelled = true;
 
-  getAndroidUsbBridge()
-    ?.stopUsbVideo?.();
+      playerReadyRef.current = false;
+      playerAReadyRef.current = false;
+      playerBReadyRef.current = false;
 
-  player.current?.destroy?.();
-  player.current = null;
-};
+      preloadedVideoIdRef.current = "";
+
+      getAndroidUsbBridge()
+        ?.stopUsbVideo?.();
+
+      playerA.current?.destroy?.();
+      playerB.current?.destroy?.();
+
+      playerA.current = null;
+      playerB.current = null;
+      player.current = null;
+    };
   }, [advancePlaybackFromDatabase]);
 
   useEffect(() => {
