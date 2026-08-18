@@ -353,7 +353,7 @@ const bannerImages = [
   "/tv_banner5.png",
 ];
 
-export default function App() {
+
 
 export default function App() {
   const playerHost = useRef(null);
