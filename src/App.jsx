@@ -564,27 +564,28 @@ if (
             inactiveSlot
           );
 
-        // USB / Queue empty /
-        // current song ကို preload မလုပ်
-        if (
-          !nextVideo ||
-          nextVideo.sourceType !==
-            "youtube" ||
-          nextVideo.id ===
-            pendingVideoRef.current?.id
-        ) {
-          if (
-            preloadedVideoIdRef.current
-          ) {
-            inactivePlayer
-              ?.stopVideo?.();
+        // Queue empty / USB ဆိုရင်
+// preload မရှိမှသာ inactive player ကိုရှင်းမယ်
+if (
+  !nextVideo ||
+  nextVideo.sourceType !== "youtube"
+) {
+  if (preloadedVideoIdRef.current) {
+    inactivePlayer?.stopVideo?.();
+    preloadedVideoIdRef.current = "";
+  }
 
-            preloadedVideoIdRef.current =
-              "";
-          }
+  return;
+}
 
-          return;
-        }
+// Next Song က Current Song နဲ့တူနေရင်
+// ရှိပြီးသား preload ကို မဖျက်ဘဲ စောင့်မယ်
+if (
+  nextVideo.id ===
+  pendingVideoRef.current?.id
+) {
+  return;
+}
 
         if (
           !getPlayerReadyForSlot(
