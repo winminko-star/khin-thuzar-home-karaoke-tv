@@ -1831,6 +1831,23 @@ if (type === "TOGGLE_MUTE") {
       className="player"
     />
   </div>
+    <div
+    style={{
+      position: "absolute",
+      right: "10px",
+      bottom: "10px",
+      zIndex: 100,
+      padding: "5px 9px",
+      borderRadius: "6px",
+      background: "rgba(0, 0, 0, 0.7)",
+      color: "white",
+      fontSize: "15px",
+      fontWeight: "bold",
+      pointerEvents: "none",
+    }}
+  >
+    {activePlayerSlot}
+  </div>
 
 {!song && (
   <div className="standby">
