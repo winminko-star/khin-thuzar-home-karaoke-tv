@@ -1314,27 +1314,15 @@ const realtimeQueueChannel = supabase
     return;
   }
 
-  if (
-    !playerReadyRef.current ||
-    !player.current
-  ) {
+    if (!playYouTubeVideo(selectedVideo)) {
     setStatus(
       "YouTube player loading…"
     );
+
     return;
   }
 
-  getAndroidUsbBridge()
-    ?.stopUsbVideo?.();
-
-  playerUnlockedRef.current = true;
-setPlayerUnlocked(true);
-
-player.current.loadVideoById(
-  selectedVideo.id
-  );
-
-setStatus("Remote connected");
+  setStatus("Remote connected");
 
   return;
           }
@@ -1790,8 +1778,59 @@ if (type === "TOGGLE_MUTE") {
   </div>
 )}
 
-<section className="screen">
-        <div ref={playerHost} className="player" />
+<section
+  className="screen"
+  style={{ position: "relative" }}
+>
+  <div
+    style={{
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      opacity:
+        song?.sourceType === "youtube" &&
+        activePlayerSlot === "A"
+          ? 1
+          : 0,
+      pointerEvents:
+        song?.sourceType === "youtube" &&
+        activePlayerSlot === "A"
+          ? "auto"
+          : "none",
+      zIndex: 1,
+    }}
+  >
+    <div
+      ref={playerHostA}
+      className="player"
+    />
+  </div>
+
+  <div
+    style={{
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      opacity:
+        song?.sourceType === "youtube" &&
+        activePlayerSlot === "B"
+          ? 1
+          : 0,
+      pointerEvents:
+        song?.sourceType === "youtube" &&
+        activePlayerSlot === "B"
+          ? "auto"
+          : "none",
+      zIndex: 1,
+    }}
+  >
+    <div
+      ref={playerHostB}
+      className="player"
+    />
+  </div>
 
 {!song && (
   <div className="standby">
