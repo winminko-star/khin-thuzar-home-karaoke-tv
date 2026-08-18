@@ -510,6 +510,16 @@ const sceneryImages = [
 
         return true;
       }
+      // Preload လုပ်ထားတဲ့သီချင်းနဲ့
+// တကယ်ဖွင့်မယ့်သီချင်း မတူရင်
+// stale preload ကိုရှင်းမယ်
+if (
+  preloadedVideoIdRef.current &&
+  preloadedVideoIdRef.current !== selectedVideo.id
+) {
+  inactivePlayer?.stopVideo?.();
+  preloadedVideoIdRef.current = "";
+}
 
       // Preload မရှိတဲ့ YouTube သီချင်းဆို
       // လက်ရှိ active Player မှာပုံမှန်ဖွင့်မယ်
@@ -585,11 +595,8 @@ const sceneryImages = [
           return;
         }
 
-        if (
-          preloadedVideoIdRef.current ===
-          nextVideo.id
-        ) {
-          return;
+        if (preloadedVideoIdRef.current) {
+  return;
         }
 
         // အသံမထွက်ဘဲ နောက် YouTube ကို
