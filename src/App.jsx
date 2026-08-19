@@ -509,7 +509,7 @@ if (
 ) {
   return;
 }
-    startSongTransition(5000);
+    startSongTransition(3000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -835,7 +835,7 @@ iv_load_policy: 3,
 ) {
   playerUnlockedRef.current = true;
   setPlayerUnlocked(true);
-   startSongTransition(5000);
+   startSongTransition(3000);
 
   event.target.loadVideoById(
     pendingVideo.id
@@ -1059,7 +1059,7 @@ const realtimeQueueChannel = supabase
 
   playerUnlockedRef.current = true;
 setPlayerUnlocked(true);
- startSongTransition(5000);
+ startSongTransition(3000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -1254,7 +1254,7 @@ if (type === "STOP_SCENERY_SHOW") {
     setStatus("Player အဆင်သင့်မဖြစ်သေးပါ။");
     return;
   }
-  startSongTransition(5000);
+  startSongTransition(3000);
  player.current.seekTo(0, true);
   player.current.playVideo();
 
