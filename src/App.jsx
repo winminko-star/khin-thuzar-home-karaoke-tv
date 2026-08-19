@@ -423,7 +423,7 @@ const sceneryImages = [
     const queue = (data || []).map(queueRowToSong);
     setNextSong(queue[0] || null);
   }, []);
-  const startSongTransition = useCallback((duration = 3000) => {
+  const startSongTransition = useCallback((duration = 5000) => {
   window.clearTimeout(transitionTimerRef.current);
 
   setTransitionCover(true);
@@ -509,7 +509,7 @@ if (
 ) {
   return;
 }
-    startSongTransition(3000);
+    startSongTransition(5000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -835,7 +835,7 @@ iv_load_policy: 3,
 ) {
   playerUnlockedRef.current = true;
   setPlayerUnlocked(true);
-   startSongTransition(3000);
+   startSongTransition(5000);
 
   event.target.loadVideoById(
     pendingVideo.id
@@ -848,7 +848,7 @@ iv_load_policy: 3,
   }
 
   if (event.data === window.YT.PlayerState.ENDED) {
-    startSongTransition(3000);
+    startSongTransition(5000);
 
     advancePlaybackFromDatabase().finally(() => {
       channel.current?.send({
@@ -1059,7 +1059,7 @@ const realtimeQueueChannel = supabase
 
   playerUnlockedRef.current = true;
 setPlayerUnlocked(true);
- startSongTransition(3000);
+ startSongTransition(5000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -1224,6 +1224,46 @@ if (type === "STOP_SCENERY_SHOW") {
 
   return;
           }
+          if (type === "FAST_RE_SING") {
+  const currentSourceType =
+    getSourceType(pendingVideoRef.current);
+
+  if (!pendingVideoRef.current) {
+    setStatus("ပြန်ဆိုရန် သီချင်းမရှိပါ။");
+    return;
+  }
+
+  if (currentSourceType === "usb") {
+    const bridge = getAndroidUsbBridge();
+
+    if (!bridge?.restartUsbVideo) {
+      setStatus("USB Fast Re-Sing မရသေးပါ။");
+      return;
+    }
+
+    bridge.restartUsbVideo();
+
+    setStatus("USB Fast Re-Sing");
+    return;
+  }
+
+  if (!player.current) {
+    setStatus("Player အဆင်သင့်မဖြစ်သေးပါ။");
+    return;
+  }
+
+  window.clearTimeout(transitionTimerRef.current);
+
+  setTransitionCover(false);
+  setTransitionMinDone(false);
+  setTransitionMediaReady(false);
+
+  player.current.seekTo(0, true);
+  player.current.playVideo();
+
+  setStatus("Fast Re-Sing");
+  return;
+          }
           if (type === "RE_SING") {
   const currentSourceType =
     getSourceType(pendingVideoRef.current);
@@ -1254,7 +1294,7 @@ if (type === "STOP_SCENERY_SHOW") {
     setStatus("Player အဆင်သင့်မဖြစ်သေးပါ။");
     return;
   }
-  startSongTransition(3000);
+  startSongTransition(5000);
  player.current.seekTo(0, true);
   player.current.playVideo();
 
