@@ -1538,11 +1538,7 @@ setTransitionMediaReady(false);
       alt="Khin Thuzar Home Karaoke"
       className="song-transition-image"
     />
-
-    <div className="song-transition-text">
-      KHIN THUZAR HOME KARAOKE
-    </div>
-  </div>
+ </div>
 )}
 
 {!song && (
