@@ -372,6 +372,10 @@ export default function App() {
   const [playerReady, setPlayerReady] = useState(false);
   const [playerUnlocked, setPlayerUnlocked] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [transitionCover, setTransitionCover] = useState(false);
+const [transitionMinDone, setTransitionMinDone] = useState(false);
+const [transitionMediaReady, setTransitionMediaReady] = useState(false);
+const transitionTimerRef = useRef(null);
   const [showTextBanner, setShowTextBanner] =
   useState(false);
 
@@ -419,6 +423,17 @@ const sceneryImages = [
     const queue = (data || []).map(queueRowToSong);
     setNextSong(queue[0] || null);
   }, []);
+  const startSongTransition = useCallback((duration = 3000) => {
+  window.clearTimeout(transitionTimerRef.current);
+
+  setTransitionCover(true);
+  setTransitionMinDone(false);
+  setTransitionMediaReady(false);
+
+  transitionTimerRef.current = window.setTimeout(() => {
+    setTransitionMinDone(true);
+  }, duration);
+}, []);
 
   const loadPlaybackState = useCallback(async () => {
     if (!configured || !supabase) return;
@@ -477,10 +492,12 @@ if (selectedVideo.sourceType === "usb") {
   }
 
   player.current?.stopVideo?.();
+  startSongTransition(800);
 
   bridge.playUsbVideo(
     getUsbFileId(selectedVideo)
   );
+  setTransitionMediaReady(true);
 
   setStatus("USB သီချင်းဖွင့်နေသည်");
   return;
@@ -492,6 +509,7 @@ if (
 ) {
   return;
 }
+    startSongTransition(3000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -499,7 +517,20 @@ player.current.loadVideoById(
 
 setStatus("Remote connected");
   }, []);
-
+  
+useEffect(() => {
+  if (
+    transitionCover &&
+    transitionMinDone &&
+    transitionMediaReady
+  ) {
+    setTransitionCover(false);
+  }
+}, [
+  transitionCover,
+  transitionMinDone,
+  transitionMediaReady
+]);
   const normalizeQueuePositions = useCallback(async () => {
     const { data } = await supabase
       .from("karaoke_queue")
@@ -691,16 +722,18 @@ setStatus("Remote connected");
   };
 
   const handleUsbVideoEnded = () => {
-    advancePlaybackFromDatabase().finally(() => {
-      channel.current?.send({
-        type: "broadcast",
-        event: "tv-status",
-        payload: {
-          type: "VIDEO_ENDED"
-        }
-      });
+  startSongTransition(800);
+
+  advancePlaybackFromDatabase().finally(() => {
+    channel.current?.send({
+      type: "broadcast",
+      event: "tv-status",
+      payload: {
+        type: "VIDEO_ENDED"
+      }
     });
-  };
+  });
+};
 
   window.addEventListener(
     "ANDROID_USB_READY",
@@ -733,7 +766,7 @@ setStatus("Remote connected");
       handleUsbVideoEnded
     );
   };
-}, [advancePlaybackFromDatabase]);
+}, [advancePlaybackFromDatabase, startSongTransition]);
   useEffect(() => {
   if (!sceneryShow) {
     return undefined;
@@ -802,6 +835,7 @@ iv_load_policy: 3,
 ) {
   playerUnlockedRef.current = true;
   setPlayerUnlocked(true);
+   startSongTransition(3000);
 
   event.target.loadVideoById(
     pendingVideo.id
@@ -809,16 +843,23 @@ iv_load_policy: 3,
     }
   },
             onStateChange: (event) => {
-              if (event.data !== window.YT.PlayerState.ENDED) return;
+  if (event.data === window.YT.PlayerState.PLAYING) {
+    setTransitionMediaReady(true);
+  }
 
-              advancePlaybackFromDatabase().finally(() => {
-                channel.current?.send({
-                  type: "broadcast",
-                  event: "tv-status",
-                  payload: { type: "VIDEO_ENDED" },
-                });
-              });
-            },
+  if (event.data === window.YT.PlayerState.ENDED) {
+    startSongTransition(3000);
+
+    advancePlaybackFromDatabase().finally(() => {
+      channel.current?.send({
+        type: "broadcast",
+        event: "tv-status",
+        payload: { type: "VIDEO_ENDED" },
+      });
+    });
+  }
+},
+            
             onError: (event) => {
               console.error("YouTube Player Error:", event.data);
               setStatus(getYouTubeErrorMessage(event.data));
@@ -841,7 +882,7 @@ iv_load_policy: 3,
   player.current?.destroy?.();
   player.current = null;
 };
-  }, [advancePlaybackFromDatabase]);
+  }, [advancePlaybackFromDatabase, startSongTransition]);
 
   useEffect(() => {
     if (!configured || !supabase) return undefined;
@@ -989,10 +1030,12 @@ const realtimeQueueChannel = supabase
     }
 
     player.current?.stopVideo?.();
+    startSongTransition(800);
 
     bridge.playUsbVideo(
       getUsbFileId(selectedVideo)
     );
+    setTransitionMediaReady(true);
 
     setStatus(
       "USB သီချင်းဖွင့်နေသည်"
@@ -1016,6 +1059,7 @@ const realtimeQueueChannel = supabase
 
   playerUnlockedRef.current = true;
 setPlayerUnlocked(true);
+ startSongTransition(3000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -1250,6 +1294,10 @@ if (type === "STOP") {
 
   pendingVideoRef.current = null;
   setSong(null);
+  window.clearTimeout(transitionTimerRef.current);
+setTransitionCover(false);
+setTransitionMinDone(false);
+setTransitionMediaReady(false);
 
   if (currentSourceType === "usb") {
     getAndroidUsbBridge()
@@ -1353,6 +1401,10 @@ if (type === "TOGGLE_MUTE") {
 
   setSong(null);
   setNextSong(null);
+            window.clearTimeout(transitionTimerRef.current);
+setTransitionCover(false);
+setTransitionMinDone(false);
+setTransitionMediaReady(false);
 
   player.current?.stopVideo?.();
 
@@ -1479,6 +1531,19 @@ if (type === "TOGGLE_MUTE") {
 
 <section className="screen">
         <div ref={playerHost} className="player" />
+  {transitionCover && (
+  <div className="song-transition-cover">
+    <img
+      src={standbyBanner}
+      alt="Khin Thuzar Home Karaoke"
+      className="song-transition-image"
+    />
+
+    <div className="song-transition-text">
+      KHIN THUZAR HOME KARAOKE
+    </div>
+  </div>
+)}
 
 {!song && (
   <div className="standby">
