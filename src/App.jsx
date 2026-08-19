@@ -1254,7 +1254,7 @@ if (type === "STOP_SCENERY_SHOW") {
     setStatus("Player အဆင်သင့်မဖြစ်သေးပါ။");
     return;
   }
-  startSongTransition(4000);
+  startSongTransition(5000);
  player.current.seekTo(0, true);
   player.current.playVideo();
 
