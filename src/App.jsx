@@ -1272,8 +1272,7 @@ if (type === "STOP_SCENERY_SHOW") {
 
   playerUnlockedRef.current = true;
   setPlayerUnlocked(true);
-  startSongTransition(1000);
-  player.current?.playVideo();
+   player.current?.playVideo();
   return;
         }
 
