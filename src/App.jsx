@@ -509,7 +509,7 @@ if (
 ) {
   return;
 }
-    startSongTransition(3000);
+    startSongTransition(5000);
 
 player.current.loadVideoById(
   selectedVideo.id
@@ -835,7 +835,7 @@ iv_load_policy: 3,
 ) {
   playerUnlockedRef.current = true;
   setPlayerUnlocked(true);
-   startSongTransition(3000);
+   startSongTransition(5000);
 
   event.target.loadVideoById(
     pendingVideo.id
@@ -1059,7 +1059,7 @@ const realtimeQueueChannel = supabase
 
   playerUnlockedRef.current = true;
 setPlayerUnlocked(true);
- startSongTransition(3000);
+ startSongTransition(5000);
 
 player.current.loadVideoById(
   selectedVideo.id
