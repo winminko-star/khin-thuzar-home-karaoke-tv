@@ -1305,13 +1305,4 @@ footer span {
 
   display: block;
 }
-.control-deck .fast-resing-button {
-  background: #e00000;
-  color: #ffffff;
-  border: 2px solid #ff4d4d;
-  font-weight: 800;
-}
 
-.control-deck .fast-resing-button:hover {
-  background: #ff0000;
-}
