@@ -1254,8 +1254,8 @@ if (type === "STOP_SCENERY_SHOW") {
     setStatus("Player အဆင်သင့်မဖြစ်သေးပါ။");
     return;
   }
-
-  player.current.seekTo(0, true);
+  startSongTransition(4000);
+ player.current.seekTo(0, true);
   player.current.playVideo();
 
   setStatus("သီချင်းကို အစကနေ ပြန်ဆိုနေသည်");
@@ -1272,7 +1272,7 @@ if (type === "STOP_SCENERY_SHOW") {
 
   playerUnlockedRef.current = true;
   setPlayerUnlocked(true);
-
+  startSongTransition(1000);
   player.current?.playVideo();
   return;
         }
