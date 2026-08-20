@@ -1387,10 +1387,6 @@ footer .next {
 .bird-footer-zone .bird-houses-static {
   z-index: 2;
 }
-
-.bird-footer-zone .bird-flying-video {
-  z-index: 1;
-}
 .bird-footer-zone .bird-flying-video {
   z-index: 3;
 }
