@@ -1371,4 +1371,24 @@ footer .next {
   width: auto;
   padding-left: 12px;
 }
+.bird-footer-zone {
+  position: relative;
+}
+
+.bird-footer-zone .bird-houses-static,
+.bird-footer-zone .bird-flying-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.bird-footer-zone .bird-houses-static {
+  z-index: 2;
+}
+
+.bird-footer-zone .bird-flying-video {
+  z-index: 1;
+}
 
