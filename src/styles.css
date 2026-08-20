@@ -1391,3 +1391,10 @@ footer .next {
   z-index: 3;
 }
 
+.bird-footer-zone .bird-flying-video.is-loading {
+  opacity: 0;
+}
+
+.bird-footer-zone .bird-flying-video.is-ready {
+  opacity: 1;
+}
