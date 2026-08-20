@@ -363,6 +363,8 @@ export default function App() {
   const stateChannel = useRef(null);
   const queueReloadTimer = useRef(null);
   const stateReloadTimer = useRef(null);
+  const birdVideoRef = useRef(null);
+const [showBirdTransition, setShowBirdTransition] = useState(false);
   const playerUnlockedRef = useRef(true);
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
@@ -1660,6 +1662,30 @@ setTransitionMediaReady(false);
     />
   </div>
 )}
+      {/* Bird House Static + Flying Animation */}
+<div className="bird-transition-layer">
+
+  {!showBirdTransition && (
+    <img
+      src="/bird-houses-static.png"
+      alt=""
+      className="bird-houses-static"
+    />
+  )}
+
+  {showBirdTransition && (
+    <video
+      ref={birdVideoRef}
+      src="/bird-transparent.webm"
+      className="bird-flying-video"
+      muted
+      playsInline
+      preload="auto"
+      onEnded={() => setShowBirdTransition(false)}
+    />
+  )}
+
+</div>
     </main>
   );
 }
