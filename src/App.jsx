@@ -1638,7 +1638,7 @@ setTransitionMediaReady(false);
   <video
     ref={birdVideoRef}
     src="/bird-transparent.webm"
-    className="bird-flying-video"
+    className={`bird-flying-video ${birdVideoReady ? "is-ready" : "is-loading"}`}
     muted
     playsInline
     preload="auto"
