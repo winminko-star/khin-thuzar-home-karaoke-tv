@@ -1641,11 +1641,16 @@ setTransitionMediaReady(false);
     className="bird-flying-video"
     muted
     playsInline
-    preload="metadata"
+    preload="auto"
     onCanPlay={(e) => {
-      setBirdVideoReady(true);
-      e.currentTarget.play();
-    }}
+  const video = e.currentTarget;
+
+  video.currentTime = 0;
+
+  video.play().then(() => {
+    setBirdVideoReady(true);
+  });
+}}
     onEnded={() => {
       setShowBirdTransition(false);
       setBirdVideoReady(false);
