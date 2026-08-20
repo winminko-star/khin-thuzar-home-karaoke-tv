@@ -1337,4 +1337,51 @@ footer span {
 
   pointer-events: none;
 }
+/* ========================================
+   FOOTER : NOW PLAYING | BIRD | NEXT
+======================================== */
+
+footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 34vw) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+footer > div {
+  min-width: 0;
+}
+
+/* center bird area */
+.bird-footer-zone {
+  width: 100%;
+  height: clamp(45px, 6vw, 85px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* static + WebM use exactly same space */
+.bird-footer-zone .bird-houses-static,
+.bird-footer-zone .bird-flying-video {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  pointer-events: none;
+}
+
+/* NEXT stays on right */
+footer .next {
+  width: auto;
+  padding-left: 12px;
+}
 
