@@ -549,6 +549,22 @@ useEffect(() => {
       )
     );
       }, []);
+  const playBirdTransition = useCallback(() => {
+  setShowBirdTransition(true);
+
+  requestAnimationFrame(() => {
+    const video = birdVideoRef.current;
+    if (!video) return;
+
+    video.pause();
+    video.currentTime = 0;
+
+    video.play().catch((error) => {
+      console.error("Bird animation play error:", error);
+      setShowBirdTransition(false);
+    });
+  });
+}, []);
 
   const advancePlaybackFromDatabase = useCallback(async () => {
     if (!configured || !supabase) return;
@@ -596,8 +612,8 @@ useEffect(() => {
 
   return;
     }
-
-    await supabase.from("karaoke_queue").delete().eq("id", nextRow.id);
+    playBirdTransition();
+   await supabase.from("karaoke_queue").delete().eq("id", nextRow.id);
     await normalizeQueuePositions();
 
     await supabase.from("karaoke_state").upsert(
@@ -612,8 +628,8 @@ useEffect(() => {
       },
       { onConflict: "room_id" }
     );
-  }, [normalizeQueuePositions]);
-  useEffect(() => {
+  }, [normalizeQueuePositions, playBirdTransition]);
+   useEffect(() => {
   let retryTimer1 = null;
   let retryTimer2 = null;
 
