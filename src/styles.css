@@ -1391,4 +1391,7 @@ footer .next {
 .bird-footer-zone .bird-flying-video {
   z-index: 1;
 }
+.bird-footer-zone .bird-flying-video {
+  z-index: 3;
+}
 
