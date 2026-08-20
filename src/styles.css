@@ -1323,20 +1323,7 @@ footer span {
   pointer-events: none;
 }
 
-.bird-houses-static,
-.bird-flying-video {
-  position: absolute;
-  inset: 0;
 
-  width: 100%;
-  height: 100%;
-
-  object-fit: contain;
-
-  display: block;
-
-  pointer-events: none;
-}
 /* ========================================
    FOOTER : NOW PLAYING | BIRD | NEXT
 ======================================== */
