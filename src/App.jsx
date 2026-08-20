@@ -365,6 +365,7 @@ export default function App() {
   const stateReloadTimer = useRef(null);
   const birdVideoRef = useRef(null);
 const [showBirdTransition, setShowBirdTransition] = useState(false);
+  const [birdVideoReady, setBirdVideoReady] = useState(false);
   const playerUnlockedRef = useRef(true);
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
@@ -550,6 +551,7 @@ useEffect(() => {
     );
       }, []);
   const playBirdTransition = useCallback(() => {
+    setBirdVideoReady(false);
   setShowBirdTransition(true);
 
   requestAnimationFrame(() => {
@@ -1624,23 +1626,32 @@ setTransitionMediaReady(false);
           <span>{song?.channel || ""}</span>
         </div>
         <div className="bird-footer-zone">
-  {!showBirdTransition ? (
-    <img
-      src="/bird-houses-static.png"
-      alt=""
-      className="bird-houses-static"
-    />
-  ) : (
-    <video
-      ref={birdVideoRef}
-      src="/bird-transparent.webm"
-      className="bird-flying-video"
-      muted
-      playsInline
-      preload="auto"
-      onEnded={() => setShowBirdTransition(false)}
-    />
-  )}
+  {(!showBirdTransition || !birdVideoReady) && (
+  <img
+    src="/bird-houses-static.png"
+    alt=""
+    className="bird-houses-static"
+  />
+)}
+
+{showBirdTransition && (
+  <video
+    ref={birdVideoRef}
+    src="/bird-transparent.webm"
+    className="bird-flying-video"
+    muted
+    playsInline
+    preload="metadata"
+    onCanPlay={(e) => {
+      setBirdVideoReady(true);
+      e.currentTarget.play();
+    }}
+    onEnded={() => {
+      setShowBirdTransition(false);
+      setBirdVideoReady(false);
+    }}
+  />
+)}
 </div>
 
         <div className="next">
