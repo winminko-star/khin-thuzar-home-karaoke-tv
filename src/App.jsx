@@ -1623,6 +1623,25 @@ setTransitionMediaReady(false);
           <strong>{song?.title || "Waiting for song…"}</strong>
           <span>{song?.channel || ""}</span>
         </div>
+        <div className="bird-footer-zone">
+  {!showBirdTransition ? (
+    <img
+      src="/bird-houses-static.png"
+      alt=""
+      className="bird-houses-static"
+    />
+  ) : (
+    <video
+      ref={birdVideoRef}
+      src="/bird-transparent.webm"
+      className="bird-flying-video"
+      muted
+      playsInline
+      preload="auto"
+      onEnded={() => setShowBirdTransition(false)}
+    />
+  )}
+</div>
 
         <div className="next">
           <small>NEXT</small>
@@ -1678,30 +1697,6 @@ setTransitionMediaReady(false);
     />
   </div>
 )}
-      {/* Bird House Static + Flying Animation */}
-<div className="bird-transition-layer">
-
-  {!showBirdTransition && (
-    <img
-      src="/bird-houses-static.png"
-      alt=""
-      className="bird-houses-static"
-    />
-  )}
-
-  {showBirdTransition && (
-    <video
-      ref={birdVideoRef}
-      src="/bird-transparent.webm"
-      className="bird-flying-video"
-      muted
-      playsInline
-      preload="auto"
-      onEnded={() => setShowBirdTransition(false)}
-    />
-  )}
-
-</div>
-    </main>
+   </main>
   );
 }
