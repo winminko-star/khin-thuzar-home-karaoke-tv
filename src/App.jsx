@@ -1643,11 +1643,7 @@ setTransitionMediaReady(false);
     playsInline
     preload="auto"
     onCanPlay={(e) => {
-  const video = e.currentTarget;
-
-  video.currentTime = 0;
-
-  video.play().then(() => {
+  e.currentTarget.play().then(() => {
     setBirdVideoReady(true);
   });
 }}
