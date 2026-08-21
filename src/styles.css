@@ -1076,40 +1076,9 @@ footer span {
   background-clip: text;
 
   -webkit-text-fill-color: transparent;
-
-  animation:
-    karaokeRainbow 5s linear infinite,
-    karaokeGlow 2.6s ease-in-out infinite alternate;
-
   filter:
     drop-shadow(0 0 5px rgba(255,255,255,.18));
 }
-
-
-@keyframes karaokeRainbow {
-  from {
-    background-position: 0% 50%;
-  }
-
-  to {
-    background-position: 300% 50%;
-  }
-}
-
-
-@keyframes karaokeGlow {
-  from {
-    filter:
-      drop-shadow(0 0 3px rgba(120,100,255,.35));
-  }
-
-  to {
-    filter:
-      drop-shadow(0 0 9px rgba(255,80,200,.65));
-  }
-}
-
-
 /* ========================================
    DANCING MICROPHONE
 ======================================== */
@@ -1121,54 +1090,9 @@ footer span {
   line-height: 1;
 
   transform-origin: 50% 85%;
-
-  animation:
-    micDance 2.2s ease-in-out infinite;
-
   filter:
     drop-shadow(0 0 5px rgba(192,132,252,.7));
 }
-
-
-@keyframes micDance {
-
-  0% {
-    transform:
-      translateY(0)
-      rotate(-12deg)
-      scale(1);
-  }
-
-  25% {
-    transform:
-      translateY(-4px)
-      rotate(8deg)
-      scale(1.06);
-  }
-
-  50% {
-    transform:
-      translateY(0)
-      rotate(14deg)
-      scale(1);
-  }
-
-  75% {
-    transform:
-      translateY(-3px)
-      rotate(-6deg)
-      scale(1.05);
-  }
-
-  100% {
-    transform:
-      translateY(0)
-      rotate(-12deg)
-      scale(1);
-  }
-}
-
-
 /* ========================================
    BEAUTIFUL TOP MARQUEE
 ======================================== */
@@ -1187,45 +1111,6 @@ footer span {
       transparent
     );
 }
-
-
-/* soft light travelling behind text */
-.tv-marquee::after {
-  content: "";
-
-  position: absolute;
-  inset: 0;
-
-  pointer-events: none;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent 20%,
-      rgba(255,255,255,.13) 50%,
-      transparent 80%
-    );
-
-  transform: translateX(-100%);
-
-  animation:
-    marqueeLight 5s ease-in-out infinite;
-}
-
-
-@keyframes marqueeLight {
-
-  0% {
-    transform: translateX(-100%);
-  }
-
-  55%,
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-
 /* moving name */
 .tv-marquee .marquee-text {
 
@@ -1248,24 +1133,7 @@ footer span {
   text-shadow:
     0 0 14px rgba(167,139,250,.25);
 
-  animation:
-    tvMarquee 15s linear infinite,
-    marqueeRainbow 4s linear infinite;
-}
-
-
-@keyframes marqueeRainbow {
-
-  from {
-    background-position: 0% 50%;
-  }
-
-  to {
-    background-position: 250% 50%;
-  }
-}
-
-
+  animation: tvMarquee 15s linear infinite;
 /* ========================================
    Accessibility
 ======================================== */
@@ -1306,31 +1174,12 @@ footer span {
   display: block;
 }
 /* ========================================
-   BIRD QUEUE → NOW PLAYING
-======================================== */
-
-.bird-transition-layer {
-  position: fixed;
-
-  left: 0;
-  right: 0;
-  bottom: clamp(62px, 9vh, 120px);
-
-  height: clamp(45px, 6vw, 90px);
-
-  z-index: 100;
-
-  pointer-events: none;
-}
-
-
-/* ========================================
    FOOTER : NOW PLAYING | BIRD | NEXT
 ======================================== */
 
 footer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 34vw) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 34vw);
   align-items: center;
   gap: 12px;
 }
@@ -1339,62 +1188,9 @@ footer > div {
   min-width: 0;
 }
 
-/* center bird area */
-.bird-footer-zone {
-  width: 100%;
-  height: clamp(45px, 6vw, 85px);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  overflow: visible;
-  pointer-events: none;
-}
-
-/* static + WebM use exactly same space */
-.bird-footer-zone .bird-houses-static,
-.bird-footer-zone .bird-flying-video {
-  display: block;
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: contain;
-  object-position: center;
-
-  pointer-events: none;
-}
-
 /* NEXT stays on right */
 footer .next {
   width: auto;
   padding-left: 12px;
 }
-.bird-footer-zone {
-  position: relative;
-}
 
-.bird-footer-zone .bird-houses-static,
-.bird-footer-zone .bird-flying-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.bird-footer-zone .bird-houses-static {
-  z-index: 2;
-}
-.bird-footer-zone .bird-flying-video {
-  z-index: 3;
-}
-
-.bird-footer-zone .bird-flying-video.is-loading {
-  opacity: 0;
-}
-
-.bird-footer-zone .bird-flying-video.is-ready {
-  opacity: 1;
-}
