@@ -367,8 +367,7 @@ export default function App() {
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
    const [song, setSong] = useState(null);
-  const [showQrPopup, setShowQrPopup] = useState(false);
-  const [nextSong, setNextSong] = useState(null);
+   const [nextSong, setNextSong] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerUnlocked, setPlayerUnlocked] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
@@ -1495,26 +1494,7 @@ setTransitionMediaReady(false);
       channel.current = null;
     };
   }, []);
-  function openQrPopup() {
-  const bridge = getAndroidUsbBridge();
-
-  if (bridge?.showQrPopup) {
-    bridge.showQrPopup(
-      `${window.location.origin}/remote-qr.png`,
-      15000
-    );
-    return;
-  }
-
-  setShowQrPopup(true);
-
-  window.setTimeout(() => {
-    setShowQrPopup(false);
-  }, 15000);
-  }
-
   
-
   return (
     <main className={`tv-shell ${showTextBanner ? "has-announcement" : ""}`}>
       <header className="tv-header">
@@ -1540,15 +1520,7 @@ setTransitionMediaReady(false);
         </div>
 
         <div className="tv-header-actions">
-  <button
-    type="button"
-    className="qr-button"
-    onClick={openQrPopup}
-    aria-label="Open Remote QR Code"
-    title="Open Remote QR Code"
-  >
-    🇲🇲
-  </button>
+  
 
   <span className="tv-status">{status}</span>
 </div>
@@ -1618,36 +1590,7 @@ setTransitionMediaReady(false);
     />
   </div>
 )}
-      {showQrPopup && (
-  <div
-    className="qr-overlay"
-    onClick={() => setShowQrPopup(false)}
-  >
-    <div
-      className="qr-popup"
-      onClick={(event) => event.stopPropagation()}
-    >
-      <button
-        type="button"
-        className="qr-close-button"
-        onClick={() => setShowQrPopup(false)}
-        aria-label="Close QR Code"
-      >
-        ✕
-      </button>
-
-      <h2>Scan to Open Remote</h2>
-
-      <img
-        src="/remote-qr.png"
-        alt="Karaoke Remote Website QR Code"
-        className="qr-image"
-      />
-
-      <p>ဖုန်း Camera ဖြင့် Scan လုပ်ပါ</p>
-    </div>
-  </div>
-)}
+      
       {sceneryShow && (
   <div className="scenery-slideshow">
     <img
