@@ -1133,7 +1133,8 @@ footer span {
   text-shadow:
     0 0 14px rgba(167,139,250,.25);
 
-  animation: tvMarquee 15s linear infinite;
+    animation: tvMarquee 15s linear infinite;
+}
 /* ========================================
    Accessibility
 ======================================== */
