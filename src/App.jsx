@@ -363,9 +363,6 @@ export default function App() {
   const stateChannel = useRef(null);
   const queueReloadTimer = useRef(null);
   const stateReloadTimer = useRef(null);
-  const birdVideoRef = useRef(null);
-const [showBirdTransition, setShowBirdTransition] = useState(false);
-  const [birdVideoReady, setBirdVideoReady] = useState(false);
   const playerUnlockedRef = useRef(true);
   const playerReadyRef = useRef(false);
   const pendingVideoRef = useRef(null);
@@ -550,23 +547,7 @@ useEffect(() => {
       )
     );
       }, []);
-  const playBirdTransition = useCallback(() => {
-    setBirdVideoReady(false);
-  setShowBirdTransition(true);
-
-  requestAnimationFrame(() => {
-    const video = birdVideoRef.current;
-    if (!video) return;
-
-    video.pause();
-    video.currentTime = 0;
-
-    video.play().catch((error) => {
-      console.error("Bird animation play error:", error);
-      setShowBirdTransition(false);
-    });
-  });
-}, []);
+  
 
   const advancePlaybackFromDatabase = useCallback(async () => {
     if (!configured || !supabase) return;
@@ -614,7 +595,7 @@ useEffect(() => {
 
   return;
     }
-    playBirdTransition();
+  
    await supabase.from("karaoke_queue").delete().eq("id", nextRow.id);
     await normalizeQueuePositions();
 
@@ -630,7 +611,7 @@ useEffect(() => {
       },
       { onConflict: "room_id" }
     );
-  }, [normalizeQueuePositions, playBirdTransition]);
+  }, [normalizeQueuePositions]);
    useEffect(() => {
   let retryTimer1 = null;
   let retryTimer2 = null;
@@ -1625,36 +1606,6 @@ setTransitionMediaReady(false);
           <strong>{song?.title || "Waiting for song…"}</strong>
           <span>{song?.channel || ""}</span>
         </div>
-        <div className="bird-footer-zone">
-  {(!showBirdTransition || !birdVideoReady) && (
-  <img
-    src="/bird-houses-static.png"
-    alt=""
-    className="bird-houses-static"
-  />
-)}
-
-{showBirdTransition && (
-  <video
-    ref={birdVideoRef}
-    src="/bird-transparent.webm"
-    className={`bird-flying-video ${birdVideoReady ? "is-ready" : "is-loading"}`}
-    muted
-    playsInline
-    preload="auto"
-    onCanPlay={(e) => {
-  e.currentTarget.play().then(() => {
-    setBirdVideoReady(true);
-  });
-}}
-    onEnded={() => {
-      setShowBirdTransition(false);
-      setBirdVideoReady(false);
-    }}
-  />
-)}
-</div>
-
         <div className="next">
           <small>NEXT</small>
           <strong>{nextSong?.title || "Queue empty"}</strong>
