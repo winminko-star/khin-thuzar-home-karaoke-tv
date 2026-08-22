@@ -492,7 +492,7 @@ if (selectedVideo.sourceType === "usb") {
   }
 
   player.current?.stopVideo?.();
-  startSongTransition(800);
+  
 
   bridge.playUsbVideo(
     getUsbFileId(selectedVideo)
@@ -723,7 +723,7 @@ useEffect(() => {
   };
 
   const handleUsbVideoEnded = () => {
-  startSongTransition(800);
+  
 
   advancePlaybackFromDatabase().finally(() => {
     channel.current?.send({
@@ -1031,8 +1031,6 @@ const realtimeQueueChannel = supabase
     }
 
     player.current?.stopVideo?.();
-    startSongTransition(800);
-
     bridge.playUsbVideo(
       getUsbFileId(selectedVideo)
     );
