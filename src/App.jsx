@@ -420,7 +420,24 @@ const sceneryImages = [
     }
 
     const queue = (data || []).map(queueRowToSong);
-    setNextSong(queue[0] || null);
+const next = queue[0] || null;
+
+setNextSong((previous) => {
+  if (!previous && !next) {
+    return previous;
+  }
+
+  if (
+    previous?.id === next?.id &&
+    previous?.title === next?.title &&
+    previous?.channel === next?.channel &&
+    previous?.thumbnail === next?.thumbnail
+  ) {
+    return previous;
+  }
+
+  return next;
+});
   }, []);
   const startSongTransition = useCallback((duration = 5000) => {
   window.clearTimeout(transitionTimerRef.current);
@@ -474,7 +491,20 @@ const changedVideo =
   selectedVideo.id;
 
 pendingVideoRef.current = selectedVideo;
-setSong(selectedVideo);
+
+setSong((previous) => {
+  if (
+    previous?.id === selectedVideo.id &&
+    previous?.sourceType === selectedVideo.sourceType &&
+    previous?.title === selectedVideo.title &&
+    previous?.channel === selectedVideo.channel &&
+    previous?.thumbnail === selectedVideo.thumbnail
+  ) {
+    return previous;
+  }
+
+  return selectedVideo;
+});
 
 if (!changedVideo) {
   return;
