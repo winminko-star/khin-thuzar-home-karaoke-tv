@@ -403,42 +403,45 @@ const sceneryImages = [
   const [status, setStatus] = useState(
     configured ? "Connecting…" : "Supabase not configured"
   );
+const loadQueueFromDatabase = useCallback(async () => {
+  try {
+    const response = await fetch(
+      "/.netlify/functions/karaoke-queue",
+      { cache: "no-store" }
+    );
 
-  const loadQueueFromDatabase = useCallback(async () => {
-    if (!configured || !supabase) return;
-
-    const { data, error } = await supabase
-      .from("karaoke_queue")
-      .select("*")
-      .eq("room_id", ROOM_ID)
-      .order("position", { ascending: true })
-      .order("id", { ascending: true });
-
-    if (error) {
-      setStatus(`Queue sync error: ${error.message}`);
-      return;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
 
+    const data = await response.json();
+
     const queue = (data || []).map(queueRowToSong);
-const next = queue[0] || null;
+    const next = queue[0] || null;
 
-setNextSong((previous) => {
-  if (!previous && !next) {
-    return previous;
+    setNextSong((previous) => {
+      if (!previous && !next) {
+        return previous;
+      }
+
+      if (
+        previous?.id === next?.id &&
+        previous?.title === next?.title &&
+        previous?.channel === next?.channel &&
+        previous?.thumbnail === next?.thumbnail
+      ) {
+        return previous;
+      }
+
+      return next;
+    });
+
+  } catch (error) {
+    console.error("Queue proxy error:", error);
+    setStatus(`Queue proxy error: ${error.message}`);
   }
-
-  if (
-    previous?.id === next?.id &&
-    previous?.title === next?.title &&
-    previous?.channel === next?.channel &&
-    previous?.thumbnail === next?.thumbnail
-  ) {
-    return previous;
-  }
-
-  return next;
-});
-  }, []);
+}, []);
+  
   const startSongTransition = useCallback((duration = 5000) => {
   window.clearTimeout(transitionTimerRef.current);
 
