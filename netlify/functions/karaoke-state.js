@@ -1,17 +1,22 @@
-exports.handler = async function () {
+export default async (request) => {
   try {
     const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
     const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY;
     const ROOM_ID =
-      process.env.VITE_KARAOKE_ROOM_ID || "KHIN-THUZAR-HOME-KARAOKE";
+      process.env.VITE_KARAOKE_ROOM_ID || "wmk-home-karaoke";
 
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
+      return new Response(
+        JSON.stringify({
           error: "Supabase environment variables missing"
-        })
-      };
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
     }
 
     const url =
@@ -25,23 +30,29 @@ exports.handler = async function () {
       }
     });
 
-    const text = await response.text();
+    const body = await response.text();
 
-    return {
-      statusCode: response.status,
+    return new Response(body, {
+      status: response.status,
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-store"
-      },
-      body: text
-    };
+      }
+    });
 
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
+    console.error("karaoke-state function error:", error);
+
+    return new Response(
+      JSON.stringify({
         error: error.message
-      })
-    };
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
   }
 };
