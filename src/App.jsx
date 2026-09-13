@@ -452,100 +452,107 @@ setNextSong((previous) => {
 }, []);
 
   const loadPlaybackState = useCallback(async () => {
-    if (!configured || !supabase) return;
+  try {
+    const response = await fetch(
+      "/.netlify/functions/karaoke-state",
+      { cache: "no-store" }
+    );
 
-    const { data, error } = await supabase
-      .from("karaoke_state")
-      .select("*")
-      .eq("room_id", ROOM_ID)
-      .maybeSingle();
-
-    if (error) {
-      setStatus(`Now Playing sync error: ${error.message}`);
-      return;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
+
+    const rows = await response.json();
+
+    // Netlify function က array ပြန်လာတာကို single row အဖြစ်ယူမယ်
+    const data = Array.isArray(rows) ? rows[0] || null : rows;
 
     const activeSong = stateRowToSong(data);
 
     if (!activeSong) {
-  pendingVideoRef.current = null;
-  setSong(null);
+      pendingVideoRef.current = null;
+      setSong(null);
 
-  player.current?.stopVideo?.();
+      player.current?.stopVideo?.();
 
-  getAndroidUsbBridge()
-    ?.stopUsbVideo?.();
+      getAndroidUsbBridge()
+        ?.stopUsbVideo?.();
 
-  return;
+      return;
     }
 
     const selectedVideo = normalizeVideo(activeSong);
 
-if (!selectedVideo) {
-  setStatus("Database video ID မမှန်ပါ။");
-  return;
-}
+    if (!selectedVideo) {
+      setStatus("Database video ID မမှန်ပါ။");
+      return;
+    }
 
-const changedVideo =
-  pendingVideoRef.current?.id !==
-  selectedVideo.id;
+    const changedVideo =
+      pendingVideoRef.current?.id !== selectedVideo.id;
 
-pendingVideoRef.current = selectedVideo;
+    pendingVideoRef.current = selectedVideo;
 
-setSong((previous) => {
-  if (
-    previous?.id === selectedVideo.id &&
-    previous?.sourceType === selectedVideo.sourceType &&
-    previous?.title === selectedVideo.title &&
-    previous?.channel === selectedVideo.channel &&
-    previous?.thumbnail === selectedVideo.thumbnail
-  ) {
-    return previous;
-  }
+    setSong((previous) => {
+      if (
+        previous?.id === selectedVideo.id &&
+        previous?.sourceType === selectedVideo.sourceType &&
+        previous?.title === selectedVideo.title &&
+        previous?.channel === selectedVideo.channel &&
+        previous?.thumbnail === selectedVideo.thumbnail
+      ) {
+        return previous;
+      }
 
-  return selectedVideo;
-});
+      return selectedVideo;
+    });
 
-if (!changedVideo) {
-  return;
-}
+    if (!changedVideo) {
+      return;
+    }
 
-if (selectedVideo.sourceType === "usb") {
-  const bridge = getAndroidUsbBridge();
+    if (selectedVideo.sourceType === "usb") {
+      const bridge = getAndroidUsbBridge();
 
-  if (!bridge?.playUsbVideo) {
-    setStatus(
-      "Android USB Player မချိတ်ရသေးပါ။"
-    );
-    return;
-  }
+      if (!bridge?.playUsbVideo) {
+        setStatus("Android USB Player မချိတ်ရသေးပါ။");
+        return;
+      }
 
-  player.current?.stopVideo?.();
-  
+      player.current?.stopVideo?.();
 
-  bridge.playUsbVideo(
-    getUsbFileId(selectedVideo)
-  );
-  setTransitionMediaReady(true);
+      bridge.playUsbVideo(
+        getUsbFileId(selectedVideo)
+      );
 
-  setStatus("USB သီချင်းဖွင့်နေသည်");
-  return;
-}
+      setTransitionMediaReady(true);
+      setStatus("USB သီချင်းဖွင့်နေသည်");
+      return;
+    }
 
-if (
-  !playerReadyRef.current ||
-  !player.current
-) {
-  return;
-}
+    if (
+      !playerReadyRef.current ||
+      !player.current
+    ) {
+      return;
+    }
+
     startSongTransition(5000);
 
-player.current.loadVideoById(
-  selectedVideo.id
-);
+    player.current.loadVideoById(
+      selectedVideo.id
+    );
 
-setStatus("Remote connected");
-  }, []);
+    setStatus("Remote connected");
+
+  } catch (error) {
+    console.error("Now Playing proxy error:", error);
+
+    setStatus(
+      `Now Playing proxy error: ${error.message}`
+    );
+  }
+}, [startSongTransition]);
   
 useEffect(() => {
   if (
