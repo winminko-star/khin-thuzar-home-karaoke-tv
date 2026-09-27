@@ -13,7 +13,7 @@ const REMOTE_RELAY_BASE =
 async function postRelayStatus(payload) {
 try {
 const response = await fetch(
-${REMOTE_RELAY_BASE}/tv-status,
+`${REMOTE_RELAY_BASE}/tv-status`,
 {
 method: "POST",
 headers: {
