@@ -1,4 +1,4 @@
-```jsx
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configured, supabase } from "./lib/supabase";
 
