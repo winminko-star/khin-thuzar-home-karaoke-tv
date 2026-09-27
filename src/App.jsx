@@ -398,6 +398,7 @@ export default function App() {
   const relayCommandSeenRef = useRef(new Set());
 const relayCommandInitializedRef = useRef(false);
 const relayStartedAtRef = useRef(Date.now());
+  const relayQueueRef = useRef([]);
   const player = useRef(null);
   const channel = useRef(null);
   const queueChannel = useRef(null);
@@ -642,6 +643,105 @@ useEffect(() => {
    useEffect(() => {
   let retryTimer1 = null;
   let retryTimer2 = null;
+     
+  const advanceRelayQueue = useCallback(async () => {
+  if (!RELAY_MODE) return false;
+
+  const nextVideo =
+    normalizeVideo(relayQueueRef.current.shift());
+
+  if (!nextVideo) {
+    setNextSong(null);
+    setSong(null);
+    pendingVideoRef.current = null;
+
+    try {
+      getAndroidUsbBridge()?.stopUsbVideo?.();
+    } catch {}
+
+    player.current?.stopVideo?.();
+
+    postRelayStatus({
+      type: "VIDEO_ENDED",
+      currentSong: null,
+      queue: []
+    });
+
+    return false;
+  }
+
+  const remainingQueue =
+    relayQueueRef.current;
+
+  setNextSong(
+    remainingQueue[0] || null
+  );
+
+  pendingVideoRef.current =
+    nextVideo;
+
+  setSong(nextVideo);
+
+  if (nextVideo.sourceType === "usb") {
+    const bridge =
+      getAndroidUsbBridge();
+
+    if (!bridge?.playUsbVideo) {
+      setStatus(
+        "Android USB Player မချိတ်ရသေးပါ။"
+      );
+      return false;
+    }
+
+    try {
+      player.current?.stopVideo?.();
+    } catch {}
+
+    bridge.playUsbVideo(
+      getUsbFileId(nextVideo)
+    );
+
+    setTransitionMediaReady(true);
+    setStatus(
+      "USB သီချင်းဖွင့်နေသည်"
+    );
+  } else {
+    try {
+      getAndroidUsbBridge()?.stopUsbVideo?.();
+    } catch {}
+
+    if (
+      !playerReadyRef.current ||
+      !player.current
+    ) {
+      setStatus(
+        "YouTube player loading…"
+      );
+      return false;
+    }
+
+    playerUnlockedRef.current = true;
+    setPlayerUnlocked(true);
+
+    startSongTransition(5000);
+
+    player.current.loadVideoById(
+      nextVideo.id
+    );
+
+    setStatus(
+      "Remote connected"
+    );
+  }
+
+  postRelayStatus({
+    type: "TV_STATE",
+    currentSong: nextVideo,
+    queue: null
+  });
+
+  return true;
+}, [startSongTransition]);   
 
   const syncAfterReconnect = async () => {
     try {
@@ -654,6 +754,7 @@ useEffect(() => {
       );
     }
   };
+     
 
   const handleInternetBack = () => {
     retryTimer1 = window.setTimeout(() => {
@@ -752,15 +853,16 @@ await sendUsbSongsInChunks(
   };
 
   const handleUsbVideoEnded = () => {
-  
+  if (RELAY_MODE) {
+    advanceRelayQueue();
+    return;
+  }
 
   advancePlaybackFromDatabase().finally(() => {
-  
-
-  postRelayStatus({
-    type: "VIDEO_ENDED"
+    postRelayStatus({
+      type: "VIDEO_ENDED"
+    });
   });
-});
 };
 
   window.addEventListener(
@@ -874,14 +976,17 @@ iv_load_policy: 3,
 if (event.data === window.YT.PlayerState.ENDED) {
   startSongTransition(5000);
 
-  advancePlaybackFromDatabase().finally(() => {
-    
+  if (RELAY_MODE) {
+    advanceRelayQueue();
+    return;
+  }
 
+  advancePlaybackFromDatabase().finally(() => {
     postRelayStatus({
       type: "VIDEO_ENDED"
     });
   });
-}  
+}
 },
             
             onError: (event) => {
@@ -1022,6 +1127,11 @@ const realtimeQueueChannel = supabase
     } = payload || {};
 
     if (type === "LOAD_AND_PLAY") {
+      relayQueueRef.current = Array.isArray(data.queue)
+  ? data.queue
+      .map(normalizeVideo)
+      .filter(Boolean)
+  : [];
       const selectedVideo =
         normalizeVideo(data.video);
 
@@ -1544,14 +1654,19 @@ const realtimeQueueChannel = supabase
       return;
     }
 
-    if (type === "SYNC_QUEUE") {
-      setNextSong(
-        getNextQueueSong(
-          data.queue,
-          data.currentIndex
-        )
-      );
-    }
+   if (type === "SYNC_QUEUE") {
+  relayQueueRef.current = Array.isArray(data.queue)
+    ? data.queue
+        .map(normalizeVideo)
+        .filter(Boolean)
+    : [];
+
+  setNextSong(
+    relayQueueRef.current[0] || null
+  );
+
+  return;
+} 
   };
 
   const pollCommands = async () => {
