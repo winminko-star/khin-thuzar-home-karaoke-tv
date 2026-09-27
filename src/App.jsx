@@ -1,18 +1,14 @@
+
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configured, supabase } from "./lib/supabase";
-
-
 
 const ROOM_ID =
 import.meta.env.VITE_KARAOKE_ROOM_ID || "wmk-home-karaoke";
 const RELAY_MODE = true;
 
-
-
 const REMOTE_RELAY_BASE =
 "https://khin-thuzar-home-karaoke-remote.netlify.app/.netlify/functions";
-
-
 
 async function postRelayStatus(payload) {
 try {
@@ -50,32 +46,20 @@ return false;
 }
 }
 
-
-
 const YOUTUBE_IFRAME_API = "https://www.youtube.com/iframe_api";
-
-
 
 function isValidVideoId(value) {
 return /^[A-Za-z0-9_-]{11}$/.test(value || "");
 }
 
-
-
 function extractYouTubeVideoId(value) {
 if (!value) return "";
 
-
-
 const text = String(value).trim();
-
-
 
 if (isValidVideoId(text)) {
 return text;
 }
-
-
 
 try {
 const url = new URL(text);
@@ -106,8 +90,6 @@ if (host === "youtube.com" || host.endsWith(".youtube.com")) {
 return "";
 }
 
-
-
 return "";
 }
 function getSourceType(video) {
@@ -115,26 +97,18 @@ if (video?.sourceType === "usb") {
 return "usb";
 }
 
-
-
 const id =
 video?.id ||
 video?.videoId ||
 "";
-
-
 
 return String(id).startsWith("usb:")
 ? "usb"
 : "youtube";
 }
 
-
-
 function getUsbFileId(video) {
 const id = String(video?.id || "");
-
-
 
 return id.startsWith("usb:")
 ? id.slice(4)
@@ -145,11 +119,7 @@ if (!video || typeof video !== "object") {
 return null;
 }
 
-
-
 const sourceType = getSourceType(video);
-
-
 
 if (sourceType === "usb") {
 const rawId = String(
@@ -174,16 +144,12 @@ return {
 
 }
 
-
-
 const id = extractYouTubeVideoId(
 video.id ||
 video.videoId ||
 video.youtube_url ||
 video.url
 );
-
-
 
 return id
 ? {
@@ -194,27 +160,17 @@ sourceType: "youtube"
 : null;
 }
 
-
-
 function getNextQueueSong(queue, currentIndex) {
 if (!Array.isArray(queue) || queue.length === 0) return null;
 
-
-
 const index = Number.isInteger(currentIndex) ? currentIndex : -1;
-
-
 
 if (index < 0) {
 return queue[0] || null;
 }
 
-
-
 return queue[index + 1] || null;
 }
-
-
 
 function queueRowToSong(row) {
 const sourceType = String(
@@ -222,8 +178,6 @@ row.video_id || ""
 ).startsWith("usb:")
 ? "usb"
 : "youtube";
-
-
 
 return {
 id: row.video_id,
@@ -236,22 +190,16 @@ thumbnail: row.thumbnail || ""
 };
 }
 
-
-
 function stateRowToSong(row) {
 if (!row?.current_video_id) {
 return null;
 }
-
-
 
 const sourceType = String(
 row.current_video_id
 ).startsWith("usb:")
 ? "usb"
 : "youtube";
-
-
 
 return {
 id: row.current_video_id,
@@ -262,20 +210,14 @@ thumbnail: row.current_thumbnail || ""
 };
 }
 
-
-
 function loadYouTubeApi() {
 if (window.YT?.Player) {
 return Promise.resolve(window.YT);
 }
 
-
-
 if (window.__karaokeYouTubeApiPromise) {
 return window.__karaokeYouTubeApiPromise;
 }
-
-
 
 window.__karaokeYouTubeApiPromise = new Promise((resolve, reject) => {
 const previousReady = window.onYouTubeIframeAPIReady;
@@ -297,12 +239,8 @@ if (!script) {
 
 });
 
-
-
 return window.__karaokeYouTubeApiPromise;
 }
-
-
 
 function getYouTubeErrorMessage(code) {
 const messages = {
@@ -314,8 +252,6 @@ const messages = {
 153: "YouTube player request identification ပြဿနာရှိပါသည်။",
 };
 
-
-
 return messages[code] || YouTube error: ${code};
 }
 function clampVolume(value) {
@@ -324,8 +260,6 @@ return Math.max(0, Math.min(100, Number(value) || 0));
 function getAndroidUsbBridge() {
 return window.AndroidUsb || null;
 }
-
-
 
 function parseUsbSongs(value) {
 try {
@@ -394,32 +328,22 @@ return [];
 }
 }
 
-
-
 const USB_CHUNK_SIZE = 50;
 const USB_SEND_BATCH_SIZE = 1;
-
-
 
 async function sendUsbSongsInChunks(targetChannel, songs) {
 if (!targetChannel?.send) {
 throw new Error("TV realtime channel မချိတ်ရသေးပါ။");
 }
 
-
-
 const safeSongs = Array.isArray(songs) ? songs : [];
 const transferId =
 usb-${Date.now()}-${Math.random().toString(36).slice(2, 8)};
-
-
 
 const totalChunks = Math.max(
 1,
 Math.ceil(safeSongs.length / USB_CHUNK_SIZE)
 );
-
-
 
 const packets = Array.from(
 { length: totalChunks },
@@ -440,8 +364,6 @@ const end = start + USB_CHUNK_SIZE;
 }
 
 );
-
-
 
 for (
 let index = 0;
@@ -465,8 +387,6 @@ await Promise.all(
 
 }
 
-
-
 return {
 transferId,
 totalChunks,
@@ -480,6 +400,7 @@ const bannerImages = [
 "/tv_banner4.png",
 "/tv_banner5.png",
 ];
+
 
 
 
@@ -509,8 +430,6 @@ const transitionTimerRef = useRef(null);
 const [showTextBanner, setShowTextBanner] =
 useState(false);
 
-
-
 const [textBannerMessage, setTextBannerMessage] =
 useState("");
 const [sceneryShow, setSceneryShow] = useState(false);
@@ -519,8 +438,6 @@ const [standbyBanner] = useState(() => {
 const randomIndex = Math.floor(Math.random() * bannerImages.length);
 return bannerImages[randomIndex];
 });
-
-
 
 const sceneryImages = [
 "/Main.png",
@@ -582,25 +499,17 @@ setStatus(Queue proxy error: ${error.message});
 }
 }, []);
 
-
-
 const startSongTransition = useCallback((duration = 5000) => {
 window.clearTimeout(transitionTimerRef.current);
-
-
 
 setTransitionCover(true);
 setTransitionMinDone(false);
 setTransitionMediaReady(false);
 
-
-
 transitionTimerRef.current = window.setTimeout(() => {
 setTransitionMinDone(true);
 }, duration);
 }, []);
-
-
 
 const loadPlaybackState = useCallback(async () => {
 if (RELAY_MODE) return;
@@ -707,8 +616,6 @@ setStatus(
 }
 }, [startSongTransition]);
 
-
-
 useEffect(() => {
 if (
 transitionCover &&
@@ -747,8 +654,6 @@ useEffect(() => {
 let retryTimer1 = null;
 let retryTimer2 = null;
 
-
-
 const syncAfterReconnect = async () => {
 try {
 await loadPlaybackState();
@@ -760,8 +665,6 @@ error
 );
 }
 };
-
-
 
 const handleInternetBack = () => {
 retryTimer1 = window.setTimeout(() => {
@@ -789,14 +692,10 @@ retryTimer2 = window.setTimeout(() => {
 
 };
 
-
-
 window.addEventListener(
 "online",
 handleInternetBack
 );
-
-
 
 return () => {
 window.removeEventListener(
@@ -822,8 +721,6 @@ const handleAndroidReady = () => {
 setStatus("Android USB ready");
 };
 
-
-
 const handleUsbSongsUpdated = async () => {
 const bridge = getAndroidUsbBridge();
 
@@ -845,8 +742,6 @@ return "ok";
 
 }
 };
-
-
 
 await sendUsbSongsInChunks(
 relayChannel,
@@ -872,15 +767,9 @@ error?.message ||
 }
 };
 
-
-
 const handleUsbVideoEnded = () => {
 
-
-
 advancePlaybackFromDatabase().finally(() => {
-
-
 
 postRelayStatus({
 type: "VIDEO_ENDED"
@@ -888,28 +777,20 @@ type: "VIDEO_ENDED"
 });
 };
 
-
-
 window.addEventListener(
 "ANDROID_USB_READY",
 handleAndroidReady
 );
-
-
 
 window.addEventListener(
 "USB_SONGS_UPDATED",
 handleUsbSongsUpdated
 );
 
-
-
 window.addEventListener(
 "USB_VIDEO_ENDED",
 handleUsbVideoEnded
 );
-
-
 
 return () => {
 window.removeEventListener(
@@ -934,22 +815,16 @@ if (!sceneryShow) {
 return undefined;
 }
 
-
-
 const timer = window.setInterval(() => {
 setSceneryIndex((current) => {
 return (current + 1) % sceneryImages.length;
 });
 }, 120000);
 
-
-
 return () => {
 window.clearInterval(timer);
 };
 }, [sceneryShow]);
-
-
 
 useEffect(() => {
 let cancelled = false;
@@ -1003,8 +878,6 @@ playerUnlockedRef.current = true;
 setPlayerUnlocked(true);
 startSongTransition(5000);
 
-
-
 event.target.loadVideoById(
 pendingVideo.id
 );
@@ -1015,12 +888,8 @@ if (event.data === window.YT.PlayerState.PLAYING) {
 setTransitionMediaReady(true);
 }
 
-
-
 if (event.data === window.YT.PlayerState.ENDED) {
 startSongTransition(5000);
-
-
 
 advancePlaybackFromDatabase().finally(() => {
 
@@ -1049,19 +918,13 @@ return () => {
 cancelled = true;
 playerReadyRef.current = false;
 
-
-
 getAndroidUsbBridge()
 ?.stopUsbVideo?.();
-
-
 
 player.current?.destroy?.();
 player.current = null;
 };
 }, [advancePlaybackFromDatabase, startSongTransition]);
-
-
 
 useEffect(() => {
 if (RELAY_MODE) return undefined;
@@ -1073,19 +936,13 @@ const reloadTvQueue = () => {
 
 window.clearTimeout(queueReloadTimer.current);
 
-
-
 queueReloadTimer.current = window.setTimeout(() => {
 loadQueueFromDatabase();
 }, 180);
 };
 
-
-
 const realtimeQueueChannel = supabase
 .channel(tv-queue:${ROOM_ID})
-
-
 
 .on(
 "postgres_changes",
@@ -1098,8 +955,6 @@ filter: room_id=eq.${ROOM_ID},
 reloadTvQueue
 )
 
-
-
 .on(
 "postgres_changes",
 {
@@ -1111,8 +966,6 @@ filter: room_id=eq.${ROOM_ID},
 reloadTvQueue
 )
 
-
-
 .on(
 "postgres_changes",
 {
@@ -1122,8 +975,6 @@ table: "karaoke_queue",
 },
 reloadTvQueue
 )
-
-
 
 .subscribe();
 
@@ -1136,8 +987,6 @@ return () => {
 };
 
 }, [loadQueueFromDatabase]);
-
-
 
 useEffect(() => {
 if (RELAY_MODE) return undefined;
@@ -1174,12 +1023,8 @@ return () => {
 
 }, [loadPlaybackState]);
 
-
-
 useEffect(() => {
 let cancelled = false;
-
-
 
 const processRelayPacket = async (payload) => {
 const realtimeChannel = {
@@ -1731,12 +1576,10 @@ if (type === "SYNC_QUEUE") {
 
 };
 
-
-
 const pollCommands = async () => {
 try {
 const response = await fetch(
-${REMOTE_RELAY_BASE}/send-command?roomId=${encodeURIComponent(           ROOM_ID         )}&all=1,
+${REMOTE_RELAY_BASE}/send-command?roomId=${encodeURIComponent( ROOM_ID )}&all=1,
 {
 cache: "no-store"
 }
@@ -1826,17 +1669,11 @@ cache: "no-store"
 
 };
 
-
-
 postRelayStatus({
 type: "READY"
 });
 
-
-
 pollCommands();
-
-
 
 const commandTimer =
 window.setInterval(
@@ -1844,16 +1681,12 @@ pollCommands,
 700
 );
 
-
-
 const heartbeatTimer =
 window.setInterval(() => {
 postRelayStatus({
 type: "HEARTBEAT"
 });
 }, 2500);
-
-
 
 return () => {
 cancelled = true;
@@ -1869,8 +1702,6 @@ window.clearInterval(
 };
 }, []);
 
-
-
 return (
 <main className={tv-shell ${showTextBanner ? "has-announcement" : ""}}>
 <header className="tv-header">
@@ -1880,15 +1711,9 @@ return (
 ✨ 💚 Khin Thuzar Hlaing 💚 ✨
 </span>
 
-
-
 </div>
 
-
-
-<h1 className="karaoke-title">   <span className="rainbow-title">     HOME KARAOKE   </span>
-
-
+<h1 className="karaoke-title"> <span className="rainbow-title"> HOME KARAOKE </span>
 
 <span
 className="dancing-mic"
@@ -1899,41 +1724,29 @@ aria-hidden="true"
 
 🎤
 
-  </span> </h1>         </div>
+</span> </h1> </div>
 
     <div className="tv-header-actions">
 
 <span className="tv-status">{status}</span>
 
-
-
-</div>       </header>
-
-
+</div> </header>
 
 {showTextBanner && (
 
-
-
-  <div     className="announcement-banner"     role="status"   >     <div className="announcement-banner-glow" />
+<div className="announcement-banner" role="status" > <div className="announcement-banner-glow" />
 
 <div className="announcement-banner-text">
   {textBannerMessage}
 </div>
 
-  </div> )}
+</div> )}
 
-
-
-<section className="screen">         <div ref={playerHost} className="player" />   {transitionCover && (   <div className="song-transition-cover">     <img       src={standbyBanner}       alt="Khin Thuzar Home Karaoke"       className="song-transition-image"     />  </div> )}
-
-
+<section className="screen"> <div ref={playerHost} className="player" /> {transitionCover && ( <div className="song-transition-cover"> <img src={standbyBanner} alt="Khin Thuzar Home Karaoke" className="song-transition-image" /> </div> )}
 
 {!song && (
 
-
-
-  <div className="standby">     <div>       <img         src={standbyBanner}         alt="Khin Thuzar Home Karaoke TV"         className="standby-banner"       />     </div>
+<div className="standby"> <div> <img src={standbyBanner} alt="Khin Thuzar Home Karaoke TV" className="standby-banner" /> </div>
 
 <p>
   {!playerReady
@@ -1941,7 +1754,7 @@ aria-hidden="true"
     : "Remote App ကနေ သီချင်းရွေးပါ"}
 </p>
 
-  </div> )}       </section>
+</div> )} </section>
 
   <footer>
     <div>
@@ -1956,11 +1769,9 @@ aria-hidden="true"
   </footer>
   {showPopup && (
 
-  <div className="popup-overlay">     <img       src="/1785761934011.png"       alt="Popup"       className="popup-image"     />   </div> )}
+<div className="popup-overlay"> <img src="/1785761934011.png" alt="Popup" className="popup-image" /> </div> )}
 
   {sceneryShow && (
 
-  <div className="scenery-slideshow">     <img       key={sceneryImages[sceneryIndex]}       src={sceneryImages[sceneryIndex]}       alt=""       className="scenery-slide-image"     />   </div> )}    </main>   ); }
-
-
+<div className="scenery-slideshow"> <img key={sceneryImages[sceneryIndex]} src={sceneryImages[sceneryIndex]} alt="" className="scenery-slide-image" /> </div> )} </main> ); }
 
