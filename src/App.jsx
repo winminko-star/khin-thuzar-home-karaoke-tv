@@ -182,7 +182,7 @@ row.video_id || ""
 return {
 id: row.video_id,
 sourceType,
-queueId: db-${row.id},
+queueId: `db-${row.id}`,
 dbId: row.id,
 title: row.title || "",
 channel: row.channel || "",
