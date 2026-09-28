@@ -6,6 +6,7 @@ const ROOM_ID =
   import.meta.env.VITE_KARAOKE_ROOM_ID || "wmk-home-karaoke";
 
 const RELAY_MODE = true;
+const tvQueueRef = useRef([]);
 
 const REMOTE_RELAY_BASE =
   "https://khin-thuzar-home-karaoke-remote.netlify.app/.netlify/functions";
@@ -790,9 +791,186 @@ export default function App() {
     }, []);
 
   const advancePlaybackFromDatabase =
-    useCallback(async () => {
-      if (RELAY_MODE) return;
-    }, []);
+  useCallback(async () => {
+    const queue = Array.isArray(
+      tvQueueRef.current
+    )
+      ? tvQueueRef.current
+      : [];
+
+    const nextRaw = queue[0];
+
+    // Queue မရှိတော့ရင် ရပ်
+    if (!nextRaw) {
+      tvQueueRef.current = [];
+
+      setNextSong(null);
+      setSong(null);
+
+      try {
+        player.current?.stopVideo?.();
+      } catch (error) {
+        console.warn(
+          "YouTube stop error:",
+          error
+        );
+      }
+
+      try {
+        getAndroidUsbBridge()?.stopUsbVideo?.();
+      } catch (error) {
+        console.warn(
+          "USB stop error:",
+          error
+        );
+      }
+
+      setStatus(
+        "Queue ထဲမှာ နောက်သီချင်း မရှိတော့ပါ။"
+      );
+
+      return {
+        nextVideo: null,
+        queue: []
+      };
+    }
+
+    const nextVideo =
+      normalizeVideo(nextRaw);
+
+    if (!nextVideo) {
+      console.error(
+        "Next queue video invalid:",
+        nextRaw
+      );
+
+      tvQueueRef.current =
+        queue.slice(1);
+
+      setNextSong(
+        tvQueueRef.current[0]
+          ? normalizeVideo(
+              tvQueueRef.current[0]
+            )
+          : null
+      );
+
+      return {
+        nextVideo: null,
+        queue: tvQueueRef.current
+      };
+    }
+
+    // ပထမဆုံး queue item ကို လက်ရှိသီချင်းအဖြစ်ယူ
+    tvQueueRef.current =
+      queue.slice(1);
+
+    // နောက်တစ်ပုဒ်ကို UI အတွက်ပြ
+    setNextSong(
+      tvQueueRef.current[0]
+        ? normalizeVideo(
+            tvQueueRef.current[0]
+          )
+        : null
+    );
+
+    pendingVideoRef.current =
+      nextVideo;
+
+    setSong(nextVideo);
+
+    // =========================
+    // USB SONG
+    // =========================
+    if (
+      nextVideo.sourceType === "usb"
+    ) {
+      const bridge =
+        getAndroidUsbBridge();
+
+      if (
+        !bridge?.playUsbVideo
+      ) {
+        setStatus(
+          "Android USB Player မချိတ်ရသေးပါ။"
+        );
+
+        return {
+          nextVideo,
+          queue: tvQueueRef.current
+        };
+      }
+
+      try {
+        player.current?.stopVideo?.();
+      } catch (error) {
+        console.warn(
+          "YouTube stop error:",
+          error
+        );
+      }
+
+      bridge.playUsbVideo(
+        getUsbFileId(nextVideo)
+      );
+
+      setTransitionMediaReady(true);
+
+      setStatus(
+        "Queue နောက်သီချင်း USB ဖွင့်နေသည်"
+      );
+
+      return {
+        nextVideo,
+        queue: tvQueueRef.current
+      };
+    }
+
+    // =========================
+    // YOUTUBE SONG
+    // =========================
+    if (
+      !playerReadyRef.current ||
+      !player.current
+    ) {
+      setStatus(
+        "YouTube player loading…"
+      );
+
+      return {
+        nextVideo,
+        queue: tvQueueRef.current
+      };
+    }
+
+    try {
+      getAndroidUsbBridge()
+        ?.stopUsbVideo?.();
+    } catch (error) {
+      console.warn(
+        "USB stop error:",
+        error
+      );
+    }
+
+    playerUnlockedRef.current = true;
+    setPlayerUnlocked(true);
+
+    startSongTransition(5000);
+
+    player.current.loadVideoById(
+      nextVideo.id
+    );
+
+    setStatus(
+      "Queue နောက်သီချင်း ဖွင့်နေသည်"
+    );
+
+    return {
+      nextVideo,
+      queue: tvQueueRef.current
+    };
+  }, [startSongTransition]);
 
   useEffect(() => {
     let retryTimer1 = null;
@@ -916,15 +1094,34 @@ export default function App() {
       };
 
     const handleUsbVideoEnded =
-      () => {
-        advancePlaybackFromDatabase().finally(
-          () => {
-            postRelayStatus({
-              type: "VIDEO_ENDED",
-            });
-          }
+  () => {
+    advancePlaybackFromDatabase()
+      .then((result) => {
+        postRelayStatus({
+          type: "VIDEO_ENDED",
+          handledByTv: true,
+          currentSong:
+            result?.nextVideo || null,
+          queue:
+            Array.isArray(result?.queue)
+              ? result.queue
+              : []
+        });
+      })
+      .catch((error) => {
+        console.error(
+          "TV USB queue advance error:",
+          error
         );
-      };
+
+        postRelayStatus({
+          type: "VIDEO_ENDED",
+          handledByTv: true,
+          currentSong: null,
+          queue: tvQueueRef.current || []
+        });
+      });
+  };
 
     window.addEventListener(
       "ANDROID_USB_READY",
@@ -1078,23 +1275,39 @@ export default function App() {
                     );
                   }
 
-                  if (
-                    event.data ===
-                    window.YT.PlayerState
-                      .ENDED
-                  ) {
-                    startSongTransition(
-                      5000
-                    );
+      if (
+  event.data ===
+  window.YT.PlayerState.ENDED
+) {
+  startSongTransition(5000);
 
-                    advancePlaybackFromDatabase().finally(
-                      () => {
-                        postRelayStatus({
-                          type: "VIDEO_ENDED",
-                        });
-                      }
-                    );
-                  }
+  advancePlaybackFromDatabase()
+    .then((result) => {
+      postRelayStatus({
+        type: "VIDEO_ENDED",
+        handledByTv: true,
+        currentSong:
+          result?.nextVideo || null,
+        queue:
+          Array.isArray(result?.queue)
+            ? result.queue
+            : []
+      });
+    })
+    .catch((error) => {
+      console.error(
+        "TV queue advance error:",
+        error
+      );
+
+      postRelayStatus({
+        type: "VIDEO_ENDED",
+        handledByTv: true,
+        currentSong: null,
+        queue: tvQueueRef.current || []
+      });
+    });
+}
                 },
 
                 onError: (event) => {
@@ -1307,6 +1520,17 @@ export default function App() {
 
             return;
           }
+            const incomingQueue = Array.isArray(data.queue)
+    ? data.queue
+        .map(normalizeVideo)
+        .filter(Boolean)
+    : [];
+
+  tvQueueRef.current = incomingQueue;
+
+  setNextSong(
+    incomingQueue[0] || null
+  );
 
           pendingVideoRef.current =
             selectedVideo;
@@ -1398,7 +1622,7 @@ export default function App() {
                 normalizeVideo(
                   pendingVideoRef.current
                 ) || null,
-              queue: null,
+              queue: tvQueueRef.current || [],
             },
           });
 
@@ -1872,6 +2096,9 @@ export default function App() {
         if (
           type === "CLEAR_QUEUE"
         ) {
+          tvQueueRef.current = [];
+
+setNextSong(null);
           pendingVideoRef.current = null;
 
           setSong(null);
@@ -1893,14 +2120,21 @@ export default function App() {
           return;
         }
 
-        if (type === "SYNC_QUEUE") {
-          setNextSong(
-            getNextQueueSong(
-              data.queue,
-              data.currentIndex
-            )
-          );
-        }
+       if (type === "SYNC_QUEUE") {
+  const incomingQueue = Array.isArray(data.queue)
+    ? data.queue
+        .map(normalizeVideo)
+        .filter(Boolean)
+    : [];
+
+  tvQueueRef.current = incomingQueue;
+
+  setNextSong(
+    incomingQueue[0] || null
+  );
+
+  return;
+} 
       };
 
     const pollCommands =
