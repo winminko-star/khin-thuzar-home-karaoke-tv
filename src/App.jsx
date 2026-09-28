@@ -6,7 +6,7 @@ const ROOM_ID =
   import.meta.env.VITE_KARAOKE_ROOM_ID || "wmk-home-karaoke";
 
 const RELAY_MODE = true;
-const tvQueueRef = useRef([]);
+
 
 const REMOTE_RELAY_BASE =
   "https://khin-thuzar-home-karaoke-remote.netlify.app/.netlify/functions";
@@ -438,6 +438,7 @@ const bannerImages = [
 
 export default function App() {
   const playerHost = useRef(null);
+  const tvQueueRef = useRef([]);
 
   const relayCommandSeenRef =
     useRef(new Set());
@@ -1537,12 +1538,7 @@ export default function App() {
 
           setSong(selectedVideo);
 
-          setNextSong(
-            getNextQueueSong(
-              data.queue,
-              data.index
-            )
-          );
+          
 
           if (
             selectedVideo.sourceType ===
